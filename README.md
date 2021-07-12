@@ -137,7 +137,25 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
   
 **4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정**  
   
+```cpp
+// 플레이어와 가장 가까운 적을 찾아냄
+			ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
+			for (auto& enemy : EnemyInSight)
+			{
+				if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
+				{
+					minDistanceEnemy = enemy;
+				}
+			}
+
+			// 가장 가까운 적 타겟으로 지정
+			LockOnTarget(minDistanceEnemy);
+```
+
 # 몬스터 FSM
+### Class Name : CS_Enemy
+
+
   
 # Climb System
   
