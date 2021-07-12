@@ -16,6 +16,9 @@
 
 # 연계 공격
 
+:-------------------------:|:-------------------------:
+![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif)
+Light Attack | Heavy Attack
 
 캐릭터의 약 공격 2개와 강 공격 3개를 서로 연계하여 사용할 수 있습니다.
 
