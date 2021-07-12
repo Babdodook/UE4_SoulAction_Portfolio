@@ -139,17 +139,17 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
   
 ```cpp
 // 플레이어와 가장 가까운 적을 찾아냄
-			ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
-			for (auto& enemy : EnemyInSight)
-			{
-				if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
-				{
-					minDistanceEnemy = enemy;
-				}
-			}
+	ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
+	for (auto& enemy : EnemyInSight)
+	{
+		if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
+		{
+			minDistanceEnemy = enemy;
+		}
+	}
 
-			// 가장 가까운 적 타겟으로 지정
-			LockOnTarget(minDistanceEnemy);
+	// 가장 가까운 적 타겟으로 지정
+	LockOnTarget(minDistanceEnemy);
 ```
 
 # 몬스터 FSM
