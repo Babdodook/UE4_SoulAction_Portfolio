@@ -24,9 +24,25 @@ Light Attack | Heavy Attack | Combined
 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.
 
 # 타겟팅 시스템
+## Class Name : CS_TargetingSystem
+  
 1. 주변 적 액터 구하기
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">
+SweepMultiByChannel을 통해 DebugShape로 원을 그리면서 적 액터를 탐색하여 배열에 담습니다.
   
+2. 장애물 감지하기
+<img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">
+LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스 합니다.  
+벽과 충돌한다면 해당 적은 제외시킵니다.  
+
+3. 게임 화면안에 적 액터가 있는지 확인하기
+<img src="https://user-images.githubusercontent.com/48229283/125273580-08387400-e348-11eb-8bc6-3a4a6720f15a.PNG" width="300" height="300">
+화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인합니다.  
+화면 안에 존재하지 않는다면 해당 적은 제외됩니다.  
+DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업입니다.  
+  
+4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정
+
 # 몬스터 FSM
   
 # Climb System
