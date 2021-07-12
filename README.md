@@ -15,7 +15,7 @@
 * [Foot IK 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#Foot-IK-System)
 
 ## 타겟팅 시스템
-### Class Name : CS_TargetingSystem  
+#### Class Name : CS_TargetingSystem  
   
 **1. 주변 적 액터 구하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
