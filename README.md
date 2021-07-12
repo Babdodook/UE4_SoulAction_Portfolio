@@ -29,9 +29,43 @@ Light Attack | Heavy Attack | Combined
   
 **1. 주변 적 액터 구하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
-SweepMultiByChannel을 통해 DebugShape로 원을 그리면서 적 액터를 탐색하여 배열에 담습니다.
+SweepMultiByChannel 사용, DebugShape로 원을 그리며 적 액터 탐색하여 배열에 Add
   
-  ---
+```cpp
+void UCS_TargetingSystem::DetectEnemyObjects()
+{
+	// 모든 배열 초기화
+	DetectedEnemy.Empty();
+	EnemyInScreen.Empty();
+	EnemyInSight.Empty();
+
+	TArray<FHitResult> OutHits;
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+
+	// 충돌 확인용 그리기
+	FCollisionShape DebugShape = FCollisionShape::MakeSphere(600.f);
+	if(bIsDrawDebug)
+		DrawDebugSphere(GetWorld(), Player->GetActorLocation(), DebugShape.GetSphereRadius(), 10, FColor::Blue, false, 1.5f);
+
+	// 스윕 멀티 트레이스
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, Player->GetActorLocation(), Player->GetActorLocation(), FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, DebugShape, TraceParams);
+
+	if (isHit)
+	{
+		for (auto& Hit : OutHits)
+		{
+			ACS_Enemy* enemy = Cast<ACS_Enemy>(Hit.GetActor());
+			if (enemy && enemy->IsAlive())
+			{
+				// 중복된 것 Add하지 않음
+				DetectedEnemy.AddUnique(enemy);
+			}
+		}
+	}
+}
+```
+  
+---
   
 **2. 장애물 감지하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">  
