@@ -22,7 +22,10 @@ Light Attack | Heavy Attack | Combined
 ![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif) | ![강공격](https://user-images.githubusercontent.com/48229283/125267953-35822380-e342-11eb-96bd-7a0495e9db73.gif) | ![혼합공격](https://user-images.githubusercontent.com/48229283/125268668-dffa4680-e342-11eb-9f98-543d33519a55.gif)
 
 
-캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.
+캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.  
+각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정합니다.  
+```cpp
+```
 
 # 타겟팅 시스템
 ### Class Name : CS_TargetingSystem  
