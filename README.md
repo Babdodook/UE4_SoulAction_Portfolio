@@ -24,6 +24,7 @@ Light Attack | Heavy Attack | Combined
 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.
 
 # 타겟팅 시스템
+1. 주변 적 액터 구하기
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">
   
 # 몬스터 FSM
