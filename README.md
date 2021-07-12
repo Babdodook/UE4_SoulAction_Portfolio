@@ -24,8 +24,6 @@ Light Attack | Heavy Attack | Combined
 
 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.  
 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정합니다.  
-```cpp
-```
 
 # 타겟팅 시스템
 ### Class Name : CS_TargetingSystem  
