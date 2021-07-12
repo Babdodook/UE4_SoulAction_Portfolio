@@ -72,6 +72,38 @@ void UCS_TargetingSystem::DetectEnemyObjects()
 LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스 합니다.  
 벽과 충돌한다면 해당 적은 제외시킵니다.  
   
+```cpp
+bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
+{
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+
+	// 트레이스 시작, 끝 포지션
+	// 플레이어 위치 -> 적 위치
+	FVector StartPoint = Player->GetActorLocation();
+	FVector EndPoint = Enemy->GetActorLocation();
+
+	float distance = FVector::Dist(StartPoint, EndPoint);
+
+	// 플레이어 -> 적 라인 트레이스
+	bool isHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel3, TraceParams);
+	if (bIsDrawDebug)
+		DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Green, false, 3.f);
+
+	if (isHit)
+	{
+		ACS_Enemy* HitEnemy = Cast<ACS_Enemy>(HitResult.GetActor());
+		if (HitEnemy != nullptr && HitEnemy == Enemy)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Hit Success : %s"), *HitEnemy->GetName());
+			return true;
+		}
+	}
+
+	return false;
+}
+```
+  
 ---
   
 **3. 게임 화면안에 적 액터가 있는지 확인하기**  
@@ -79,6 +111,27 @@ LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레�
 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인합니다  
 화면 안에 존재하지 않는다면 해당 적은 제외됩니다  
 DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업입니다  
+  
+```cpp
+bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
+{
+	// APlayerController 캐스팅
+	const APlayerController* const PlayerController = Cast<const APlayerController>(Player->GetController());
+
+	// 월드 좌표 -> 스크린 좌표 변환
+	FVector2D ScreenLocation;
+	PlayerController->ProjectWorldLocationToScreen(Enemy->GetActorLocation(), ScreenLocation);
+
+	int32 ScreenX = ScreenLocation.X;
+	int32 ScreenY = ScreenLocation.Y;
+
+	// 타겟이 스크린좌표에서 스크린 크기와 높이 보다 큰 값을 가진다면, 화면 밖에 있는 것으로 판정한다.
+	if ((0 < ScreenX && ScreenX < ScreenWidth) && (0 < ScreenY && ScreenY < ScreenHeight))
+		return true;
+	else
+		return false;
+}
+```
   
 ---
   
