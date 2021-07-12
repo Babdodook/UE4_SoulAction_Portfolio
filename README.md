@@ -4,10 +4,10 @@
 
 # 목차
 * [소개 영상](https://youtu.be/b2idKuy5u80)
-* 구현 내용
+* [구현 내용](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#구현-내용)
   
   
-# 기능
+# 구현 내용
 * 연계 공격
 * 타겟팅 시스템
 * 몬스터 FSM
