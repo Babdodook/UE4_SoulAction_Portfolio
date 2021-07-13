@@ -158,7 +158,13 @@ Light Attack | Heavy Attack | Combined
 #### 유한상태 기계 플로우
 
 <img src="https://user-images.githubusercontent.com/48229283/125384154-6f4f3a80-e3d3-11eb-92ff-ba9dbbec2e97.PNG" width="510" height="300">  
-
+  
+* 공격패턴마다 해당하는 사거리(Range)와 시야각(Angle)을 가진다.
+* 공격 딜레이 중 일때는 랜덤한 방향으로 이동을 한다.
+* 공격 딜레이가 끝날 시에는 타겟을 추적하여 이동한다.
+* 타겟 추적 중 사거리와 시야각을 만족하면 공격한다.
+  
+  
 #### Class Name : CS_Enemy
 
 
