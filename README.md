@@ -165,6 +165,7 @@ Light Attack | Heavy Attack | Combined
 * 타겟 추적 중 사거리와 시야각을 만족하면 공격한다.
   
   
+<img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="510" height="300">  
 #### Class Name : CS_Enemy
 
 
