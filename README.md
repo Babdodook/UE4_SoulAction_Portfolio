@@ -19,7 +19,7 @@
   
 **1. 주변 적 액터 구하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
-SweepMultiByChannel을 사용하여 DebugShape로 원을 그리며 적 액터 탐색하여 배열에 Add합니다.  
+* SweepMultiByChannel을 사용하여 DebugShape로 원을 그리며 적 액터 탐색하여 배열에 Add
   
 ```cpp
 void UCS_TargetingSystem::DetectEnemyObjects()
@@ -59,8 +59,8 @@ void UCS_TargetingSystem::DetectEnemyObjects()
   
 **2. 장애물 감지하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">  
-LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스 합니다.  
-벽과 충돌한다면 해당 적은 제외시킵니다.  
+* LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
+* 벽과 충돌한다면 해당 적은 제외
   
 ```cpp
 bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
@@ -98,9 +98,9 @@ bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
   
 **3. 게임 화면안에 적 액터가 있는지 확인하기**  
 <img src="https://user-images.githubusercontent.com/48229283/125273580-08387400-e348-11eb-8bc6-3a4a6720f15a.PNG" width="500" height="300">  
-화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인합니다  
-화면 안에 존재하지 않는다면 해당 적은 제외됩니다  
-DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업입니다  
+* 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인 
+* 화면 안에 존재하지 않는다면 해당 적은 제외
+* DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업
   
 ```cpp
 bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
@@ -150,8 +150,8 @@ Light Attack | Heavy Attack | Combined
 ![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif) | ![강공격](https://user-images.githubusercontent.com/48229283/125267953-35822380-e342-11eb-96bd-7a0495e9db73.gif) | ![혼합공격](https://user-images.githubusercontent.com/48229283/125268668-dffa4680-e342-11eb-9f98-543d33519a55.gif)
 
 
-캐릭터의 약 공격과 강 공격을 서로 연계하여 사용할 수 있습니다.  
-각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정합니다.  
+* 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용
+* 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정
 
 
 ## 몬스터 FSM
@@ -165,7 +165,11 @@ Light Attack | Heavy Attack | Combined
 * 타겟 추적 중 사거리와 시야각을 만족하면 공격한다.
   
   
+#### 클래스 상속
 <img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="510" height="300">  
+  
+Enemy 베이스 클래스를 상속하여 override하여 사용합니다.
+
 #### Class Name : CS_Enemy
 
 
