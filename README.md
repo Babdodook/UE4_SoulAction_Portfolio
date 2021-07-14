@@ -274,6 +274,8 @@ public:
 ### 3. 잔상 구현
   
 ![잔상1](https://user-images.githubusercontent.com/48229283/125550644-92a17e64-d83b-44f4-986e-e7e2d5029476.gif) | ![잔상2](https://user-images.githubusercontent.com/48229283/125550654-b84c3b63-1585-49ff-b4b8-618fcf2ab462.gif)
+:-------------------------:|:-------------------------:
+잔상1 | 잔상2
   
 * 잔상 머터리얼
   
