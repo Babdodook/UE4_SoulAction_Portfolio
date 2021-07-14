@@ -163,7 +163,7 @@ Light Attack | Heavy Attack | Combined
 
 
 ## 몬스터 FSM
-#### 유한상태 기계 플로우
+### 유한상태 기계 플로우
 
 <img src="https://user-images.githubusercontent.com/48229283/125384154-6f4f3a80-e3d3-11eb-92ff-ba9dbbec2e97.PNG" width="510" height="300">  
   
