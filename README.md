@@ -184,6 +184,8 @@ Light Attack | Heavy Attack | Combined
 
 **1. 사거리 및 시야각**
   
+* 사거리와 시야각 만족시 공격
+  
 ```cpp
 	// 공격 사정거리와 각도 모두 만족할 경우에 공격이 가능하도록 한다.
 	// 공격 딜레이가 0이하 일때 실행한다.
@@ -193,6 +195,9 @@ Light Attack | Heavy Attack | Combined
 		Attack();
 	}
 ```
+  
+* 사거리와 시야각 조건 검사
+  
 ```cpp
 bool ACS_Enemy::IsTargetExistInAttackArea()
 {
@@ -203,6 +208,9 @@ bool ACS_Enemy::IsTargetExistInAttackArea()
 	else return false;
 }
 ```
+  
+* 벡터 내적을 통해 타겟과의 각도 구하기
+  
 ```cpp
 float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
 {
@@ -218,8 +226,13 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
 	return Angle;
 }
 ```
-
-
+  
+**2. 공격 패턴 결정**
+  
+* 
+  
+<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="510" height="300">  
+  
 #### Class Name : CS_Enemy
 
 
