@@ -193,6 +193,32 @@ Light Attack | Heavy Attack | Combined
 		Attack();
 	}
 ```
+```cpp
+bool ACS_Enemy::IsTargetExistInAttackArea()
+{
+	if (CombatTarget == nullptr) return false;
+
+	// 공격 거리와 공격각도 모두 만족할 경우에 true를 반환한다. 그렇지 않은 경우 false를 반환한다.
+	if (GetTargetDistance() <= AttackRange && ULJSMathHelpers::GetAngleToTarget(this, CombatTarget) <= AttackAngle) return true;
+	else return false;
+}
+```
+```cpp
+float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
+{
+	// 타겟과 현재 액터의 방향 벡터를 구함
+	FVector direction = (Target->GetActorLocation() - OwnActor->GetActorLocation()).GetSafeNormal();
+
+	// 현재 액터의 forward벡터와 direction 벡터의 내적, 라디안각도 구함
+	float dot = FVector::DotProduct(OwnActor->GetActorForwardVector(), direction);
+
+	// 호도 -> 각도 변환
+	float Angle = FMath::RadiansToDegrees(FMath::Acos(dot));
+
+	return Angle;
+}
+```
+
 
 #### Class Name : CS_Enemy
 
