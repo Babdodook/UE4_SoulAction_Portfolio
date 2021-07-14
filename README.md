@@ -174,7 +174,7 @@ Light Attack | Heavy Attack | Combined
   
   
 #### 클래스 상속
-<img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="510" height="300">  
+<img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="400" height="200">  
   
 * Enemy 베이스 클래스를 상속하여 override하여 사용
   
