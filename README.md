@@ -286,7 +286,9 @@ public:
   
   
 * PoseableMesh 컴포넌트를 가진 액터를 스폰
+  
 ![bp고스트](https://user-images.githubusercontent.com/48229283/125551875-25bae332-6fe4-4dae-a27e-c272d3d9cbb8.PNG)
+  
 ```cpp
 void ACS_Boss1::SpawnGhostTrail(float SpawnDelay)
 {
