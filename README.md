@@ -21,9 +21,9 @@
   
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
   
-* SweepMultiByChannel을 사용하여 스윕멀티한다.
-* DebugShape로 원을 그린다.
-* 적 액터 탐색하여 배열에 Add.
+* SweepMultiByChannel을 사용하여 스윕멀티
+* DebugShape로 원을 그린다
+* 적 액터 탐색하여 배열에 Add
   
 ```cpp
 void UCS_TargetingSystem::DetectEnemyObjects()
