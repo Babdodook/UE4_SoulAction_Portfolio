@@ -273,6 +273,10 @@ public:
   
 ### 3. 잔상 구현
   
+![잔상1](https://user-images.githubusercontent.com/48229283/125550644-92a17e64-d83b-44f4-986e-e7e2d5029476.gif) | ![잔상2](https://user-images.githubusercontent.com/48229283/125550654-b84c3b63-1585-49ff-b4b8-618fcf2ab462.gif)
+  
+* 잔상 머터리얼
+  
 ![잔상](https://user-images.githubusercontent.com/48229283/125549805-2182b869-2587-466f-ab6e-6f3193898ed3.PNG) | ![잔상인스턴스](https://user-images.githubusercontent.com/48229283/125549815-350e5495-0252-43c9-b7ca-91b77251aa35.PNG)
 :-------------------------:|:-------------------------:
 잔상 머터리얼 | 머터리얼 인스턴스
