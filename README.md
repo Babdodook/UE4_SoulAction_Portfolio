@@ -62,6 +62,7 @@ void UCS_TargetingSystem::DetectEnemyObjects()
 **2. 장애물 감지하기**  
   
 <img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">  
+  
 * LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
 * 벽과 충돌한다면 해당 적은 제외
   
@@ -102,6 +103,7 @@ bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
 **3. 게임 화면안에 적 액터가 있는지 확인하기**  
   
 <img src="https://user-images.githubusercontent.com/48229283/125273580-08387400-e348-11eb-8bc6-3a4a6720f15a.PNG" width="500" height="300">  
+  
 * 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인 
 * 화면 안에 존재하지 않는다면 해당 적은 제외
 * DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업
@@ -172,7 +174,23 @@ Light Attack | Heavy Attack | Combined
 #### 클래스 상속
 <img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="510" height="300">  
   
-Enemy 베이스 클래스를 상속하여 override하여 사용합니다.
+* Enemy 베이스 클래스를 상속하여 override하여 사용
+  
+  
+#### 상세 기능
+
+
+**1. 사거리 및 시야각**
+  
+```cpp
+	// 공격 사정거리와 각도 모두 만족할 경우에 공격이 가능하도록 한다.
+	// 공격 딜레이가 0이하 일때 실행한다.
+	if (IsTargetExistInAttackArea() && IsAttackDelayZero())
+	{
+		// 공격을 실행한다.
+		Attack();
+	}
+```
 
 #### Class Name : CS_Enemy
 
