@@ -17,7 +17,8 @@
 ## 타겟팅 시스템
 #### Class Name : CS_TargetingSystem  
   
-**1. 주변 적 액터 구하기**  
+  
+### 1. 주변 적 액터 구하기
   
 <img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
   
@@ -59,9 +60,8 @@ void UCS_TargetingSystem::DetectEnemyObjects()
 }
 ```
   
----
   
-**2. 장애물 감지하기**  
+### 2. 장애물 감지하기
   
 <img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">  
   
@@ -100,9 +100,8 @@ bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
 }
 ```
   
----
   
-**3. 게임 화면안에 적 액터가 있는지 확인하기**  
+### 3. 게임 화면안에 적 액터가 있는지 확인하기
   
 <img src="https://user-images.githubusercontent.com/48229283/125273580-08387400-e348-11eb-8bc6-3a4a6720f15a.PNG" width="500" height="300">  
   
@@ -131,9 +130,8 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
 }
 ```
   
----
   
-**4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정**  
+### 4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정
   
 ```cpp
 // 플레이어와 가장 가까운 적을 찾아냄
@@ -149,7 +147,8 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
 	// 가장 가까운 적 타겟으로 지정
 	LockOnTarget(minDistanceEnemy);
 ```
-
+  
+  
 ## 연계 공격
 #### Class Name : CS_Player  
   
@@ -173,16 +172,16 @@ Light Attack | Heavy Attack | Combined
 * 타겟 추적 중 사거리와 시야각을 만족하면 공격
   
   
-#### 클래스 상속
+### 클래스 상속
 <img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="400" height="250">  
   
 * Enemy 베이스 클래스를 상속하여 override하여 사용
   
   
-#### 상세 기능
+### 상세 기능
 
 
-**1. 사거리 및 시야각**
+### 1. 사거리 및 시야각
   
 * 사거리와 시야각 만족시 공격
   
@@ -227,9 +226,8 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
 }
 ```
   
----
   
-**2. 공격 패턴 결정**
+### 2. 공격 패턴 결정
   
 * 배열에 랜덤으로 결정된 공격패턴 Add
   
