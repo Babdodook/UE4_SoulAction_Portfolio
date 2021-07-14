@@ -254,7 +254,7 @@ int32 randnum = GenerateCombatRandNum();
   
 * 사거리와 시야각 정보는 DataTable로 연동
   
-<img src="https://user-images.githubusercontent.com/48229283/125547881-d672a383-a885-47b1-87cd-c6db872624b3.PNG" width="450" height="200">  
+<img src="https://user-images.githubusercontent.com/48229283/125547881-d672a383-a885-47b1-87cd-c6db872624b3.PNG" width="400" height="200">  
   
 #### Class Name : CS_Enemy
 
