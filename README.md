@@ -231,7 +231,30 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
   
 * 배열에 랜덤으로 결정된 공격패턴 Add
   
-<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="510" height="200">  
+<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="510" height="250">  
+  
+* 배열에 추가하면서 공격에 해당하는 사거리(AttackRange)와 시야각(AttackAngle) 할당
+  
+```cpp
+int32 randnum = GenerateCombatRandNum();
+
+	switch (randnum)
+	{
+	case 1:
+		CombatActions.Add(EnemyAnim->Attack1Montage);
+		SetAttackArea(AICombatDataAry[0].AttackRange, AICombatDataAry[0].AttackAngle);
+
+		break;
+	case 2:
+		CombatActions.Add(EnemyAnim->Attack2Montage);
+		SetAttackArea(AICombatDataAry[1].AttackRange, AICombatDataAry[1].AttackAngle);
+
+		break;
+```
+  
+* 사거리와 시야각 정보는 DataTable로 연동
+  
+<img src="https://user-images.githubusercontent.com/48229283/125547881-d672a383-a885-47b1-87cd-c6db872624b3.PNG" width="510" height="250">  
   
 #### Class Name : CS_Enemy
 
