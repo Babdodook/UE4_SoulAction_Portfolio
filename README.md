@@ -229,9 +229,9 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
   
 **2. 공격 패턴 결정**
   
-* 
+* 배열에 랜덤으로 결정된 공격패턴 Add
   
-<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="510" height="300">  
+<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="510" height="200">  
   
 #### Class Name : CS_Enemy
 
