@@ -256,6 +256,21 @@ int32 randnum = GenerateCombatRandNum();
   
 <img src="https://user-images.githubusercontent.com/48229283/125547881-d672a383-a885-47b1-87cd-c6db872624b3.PNG" width="300" height="150">  
   
+```cpp
+USTRUCT(Atomic, BlueprintType)
+struct FAICombatStruct : public FTableRowBase
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float AttackRange;
+
+	UPROPERTY(EditAnywhere)
+	float AttackAngle;
+};
+```
+  
 #### Class Name : CS_Enemy
 
 
