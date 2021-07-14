@@ -306,17 +306,29 @@ void ACS_Boss1::SpawnGhostTrail(float SpawnDelay)
 }
 ```
   
-* 액터의 포즈를 복사
+* 액터의 포즈를 복사 후 타이머로 사라지게 만들기
 ```cpp
 void ACS_GhostTrail::SetPose(USkeletalMeshComponent* Mesh)
 {
 	PoseableMesh->CopyPoseFromSkeletalComponent(Mesh);
 }
-```
-  
-* 타이머를 통해 사라지게 만들기
-```cpp
-GetWorldTimerManager().SetTimer(TrailDissapearTimeHandle, this, &ACS_GhostTrail::TrailDissapearTimer, GetWorld()->GetDeltaSeconds(), true, 0.2f);
+
+void ACS_GhostTrail::TrailDissapearTimer()
+{
+	Opacity = FMath::Lerp<float, float>(Opacity, -0.5f, 5.f * GetWorld()->GetDeltaSeconds());
+
+	for (int i = 0; i < PoseableMesh->GetNumMaterials(); i++)
+	{
+		UMaterialInstanceDynamic* mat = Cast<UMaterialInstanceDynamic>(PoseableMesh->GetMaterial(i));
+		mat->SetScalarParameterValue("Opacity", Opacity);
+	}
+
+	if (Opacity <= 0.f)
+	{
+		GetWorldTimerManager().ClearTimer(TrailDissapearTimeHandle);
+		Destroy();
+	}
+}
 ```
   
 ## Climb System
