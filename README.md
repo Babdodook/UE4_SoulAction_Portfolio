@@ -231,7 +231,7 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
   
 * 배열에 랜덤으로 결정된 공격패턴 Add
   
-<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="430" height="250">  
+<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="430" height="220">  
   
 * 배열에 추가하면서 공격에 해당하는 사거리(AttackRange)와 시야각(AttackAngle) 할당
   
