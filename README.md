@@ -306,13 +306,18 @@ void ACS_Boss1::SpawnGhostTrail(float SpawnDelay)
 }
 ```
   
-* 액터의 포즈를 복사 후 타이머로 사라지게 만들기
+* 액터의 포즈를 복사
+  
 ```cpp
 void ACS_GhostTrail::SetPose(USkeletalMeshComponent* Mesh)
 {
 	PoseableMesh->CopyPoseFromSkeletalComponent(Mesh);
 }
-
+```
+  
+* 타이머로 사라지게 만들기
+  
+```cpp
 void ACS_GhostTrail::TrailDissapearTimer()
 {
 	Opacity = FMath::Lerp<float, float>(Opacity, -0.5f, 5.f * GetWorld()->GetDeltaSeconds());
