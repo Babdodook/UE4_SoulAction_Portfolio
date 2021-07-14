@@ -277,16 +277,42 @@ public:
 :-------------------------:|:-------------------------:
 잔상1 | 잔상2
   
-* 잔상 머터리얼
+  
+* 잔상 머터리얼 준비
   
 ![잔상](https://user-images.githubusercontent.com/48229283/125549805-2182b869-2587-466f-ab6e-6f3193898ed3.PNG) | ![잔상인스턴스](https://user-images.githubusercontent.com/48229283/125549815-350e5495-0252-43c9-b7ca-91b77251aa35.PNG)
 :-------------------------:|:-------------------------:
 잔상 머터리얼 | 머터리얼 인스턴스
   
-#### Class Name : CS_Enemy
-
-
   
+* PoseableMesh 컴포넌트를 가진 액터를 스폰
+![bp고스트](https://user-images.githubusercontent.com/48229283/125551875-25bae332-6fe4-4dae-a27e-c272d3d9cbb8.PNG)
+```cpp
+void ACS_Boss1::SpawnGhostTrail(float SpawnDelay)
+{
+	// 타이머 실행중이라면 실행하지 않는다.
+	if (GetWorldTimerManager().IsTimerActive(SpawnGhostTrailTimerHandle)) return;
+
+	// 스폰 딜레이를 지정한다.
+	SpawnGhostTrailTime = SpawnDelay;
+	GetWorldTimerManager().SetTimer(SpawnGhostTrailTimerHandle, this, &ACS_Boss1::SpawnGhostTrailTimer, GetWorld()->GetDeltaSeconds(), true);
+
+	// 고스트 트레일 액터를 스폰한다.
+	ACS_GhostTrail* GhostTrail = GetWorld()->SpawnActor<ACS_GhostTrail>(GhostTrailClass, GetMesh()->GetComponentTransform());
+	// 현재 Boss1의 메쉬를 포즈로 지정한다.
+	GhostTrail->SetPose(GetMesh());
+}
+```
+  
+* 액터의 포즈를 복사
+```cpp
+void ACS_GhostTrail::SetPose(USkeletalMeshComponent* Mesh)
+{
+	PoseableMesh->CopyPoseFromSkeletalComponent(Mesh);
+}
+```
+
+
 ## Climb System
   
 ## Foot IK System
