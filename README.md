@@ -313,8 +313,12 @@ void ACS_GhostTrail::SetPose(USkeletalMeshComponent* Mesh)
 	PoseableMesh->CopyPoseFromSkeletalComponent(Mesh);
 }
 ```
-
-
+  
+* 타이머를 통해 사라지게 만들기
+```cpp
+GetWorldTimerManager().SetTimer(TrailDissapearTimeHandle, this, &ACS_GhostTrail::TrailDissapearTimer, GetWorld()->GetDeltaSeconds(), true, 0.2f);
+```
+  
 ## Climb System
   
 ## Foot IK System
