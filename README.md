@@ -344,9 +344,41 @@ void ACS_GhostTrail::TrailDissapearTimer()
   
 ![socketpelvis](https://user-images.githubusercontent.com/48229283/125717988-07c74545-05d1-49df-a759-464da7161e49.PNG)
   
+* 캐릭터 전방으로 트레이스 Forward Trace
+* 캐릭터 전방 위에서 밑으로 트레이스 Height Trace
+  
+![1](https://user-images.githubusercontent.com/48229283/125782313-1a702cc4-512f-4f3f-bb1f-fc9f133f03d2.PNG)
+  
+* 캐릭터가 점프 하였을 때 Hit 상황
+  
+![2](https://user-images.githubusercontent.com/48229283/125782318-f9d98fde-449b-4ca7-b3f3-16f3a1b285fb.PNG)
+  
+* Height Trace의 outHit.Location의 Z값과 Socket_Pelvis의 Z값으로 ZValue를 구한다.
+  
+![3](https://user-images.githubusercontent.com/48229283/125782319-afbc14a0-507d-440b-9885-3f3f73795b84.PNG)
 
+* InRange로 ZValue가 적정 구간에 있는지 검사한다.
+  
+```cpp
+bool UCS_ClimbSystem::IsHipToLedge()
+{
+    FVector SocketLocation = Cast<ACharacter>(OwnerActor)->GetMesh()->GetSocketLocation("Socket_Pelvis");
 
-
+    float ZValue = SocketLocation.Z - HeightLocation.Z;
+    // ZValue가 HipToLedgeMin ~ HipToLedgeMax 사이에 있다면 True를 반환한다.
+    return UKismetMathLibrary::InRange_FloatFloat(ZValue, HipToLedgeMin, HipToLedgeMax);
+}
+```
+  
+* ZValue가 조건을 만족한다면 난간 붙잡기(Grab Ledge)를 실행한다.
+  
+```cpp
+	// Pelvis 소켓이 난간을 붙잡을 수 있는 범위에 있는지?
+        // 난간 올라서는 중 아닐때
+        // 공중에 떠있는 상태일때만 가능
+        if (IsHipToLedge() && !bIsClimbingLedge && playerClass->playerAnim->bIsInAir)
+            GrabLedge();    // 난간 잡기 실행
+```
   
 ## Foot IK System
   
