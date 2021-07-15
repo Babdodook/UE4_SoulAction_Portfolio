@@ -380,5 +380,10 @@ bool UCS_ClimbSystem::IsHipToLedge()
             GrabLedge();    // 난간 잡기 실행
 ```
   
+### Move To Ledge
+  
+* Grab Ledge를 실행하게 되면 캐릭터를 난간으로 이동시켜야 한다.
+* 
+  
 ## Foot IK System
   
