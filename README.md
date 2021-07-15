@@ -383,7 +383,16 @@ bool UCS_ClimbSystem::IsHipToLedge()
 ### Move To Ledge
   
 * Grab Ledge를 실행하게 되면 캐릭터를 난간으로 이동시켜야 한다.
-* 
+* 캐릭터가 위치해야할 난간의 위치(Location)를 구한다.
+  
+![4](https://user-images.githubusercontent.com/48229283/125836506-7e4778fe-c4e3-41e1-a95a-a6bcca3217b6.PNG)
+  
+![5](https://user-images.githubusercontent.com/48229283/125836510-d7c1c324-f324-4863-b6a8-26c4420000a6.PNG)
+  
+![6](https://user-images.githubusercontent.com/48229283/125836514-0b564388-3eec-4bc1-b111-b2aa782e970f.PNG)
+  
+![7](https://user-images.githubusercontent.com/48229283/125836516-4338f86c-6757-4956-a5bd-f0e1b67cde0e.PNG)
+  
   
 ## Foot IK System
   
