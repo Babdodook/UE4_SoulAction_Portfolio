@@ -355,7 +355,7 @@ void ACS_GhostTrail::TrailDissapearTimer()
   
 * Height Trace의 outHit.Location의 Z값과 Socket_Pelvis의 Z값으로 ZValue를 구한다.
   
-![3](https://user-images.githubusercontent.com/48229283/125782319-afbc14a0-507d-440b-9885-3f3f73795b84.PNG)
+![3](https://user-images.githubusercontent.com/48229283/125835081-d6e815f8-704d-48f9-bc98-2144d26f2d04.PNG)
 
 * InRange로 ZValue가 적정 구간에 있는지 검사한다.
   
