@@ -438,7 +438,6 @@ FVector UCS_ClimbSystem::MoveToLocation()
   
 ## Foot IK System
   
-![footik1](https://user-images.githubusercontent.com/48229283/125841320-159c57a7-521d-4c89-8707-4767205570a9.gif) |
-![footik2](https://user-images.githubusercontent.com/48229283/125841334-7d79a38e-cbb9-4f41-8923-04cd002a312a.png)
+![footik1](https://user-images.githubusercontent.com/48229283/125841320-159c57a7-521d-4c89-8707-4767205570a9.gif) | ![footik2](https://user-images.githubusercontent.com/48229283/125841334-7d79a38e-cbb9-4f41-8923-04cd002a312a.png)
 :-------------------------:|:-------------------------:
 IK1 | IK2
