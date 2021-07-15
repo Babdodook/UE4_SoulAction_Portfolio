@@ -393,6 +393,48 @@ bool UCS_ClimbSystem::IsHipToLedge()
   
 ![7](https://user-images.githubusercontent.com/48229283/125836516-4338f86c-6757-4956-a5bd-f0e1b67cde0e.PNG)
   
+* 난간의 위치를 구하고 캐릭터가 배치될 Z값 만큼 빼준다.
+  
+```cpp
+FVector UCS_ClimbSystem::MoveToLocation()
+{
+    FVector NewWallNormal = WallNormal * FVector(22.f,22.f,0.f);
+    float MakeXValue = NewWallNormal.X + WallLocation.X;
+    float MakeYValue = NewWallNormal.Y + WallLocation.Y;
+    float MakeZValue = WallZLocation + (WallZSize * 0.5f) - 100.f;
+    FVector DesiredLocation = FVector(MakeXValue, MakeYValue, MakeZValue);
+    return DesiredLocation;
+}
+```
+  
+* MoveComponentTo로 이동
+  
+```cpp
+	// 붙잡아야하는 난간의 위치와 회전값을 할당한다.
+        TargetRelativeLocation = MoveToLocation();
+        FRotator NewRotWallNormal = UKismetMathLibrary::MakeRotFromX(WallNormal);
+        TargetRelativeRotation = UKismetMathLibrary::MakeRotator(NewRotWallNormal.Roll, NewRotWallNormal.Pitch, NewRotWallNormal.Yaw - 180.f);
+
+        FLatentActionInfo LatentInfo;
+        LatentInfo.CallbackTarget = this;
+        LatentInfo.ExecutionFunction = FName("GrabLedgeMoveFinished");  // Move가 끝날시 콜백한다.
+        LatentInfo.Linkage = 0;
+        LatentInfo.UUID = 0;
+
+        // 현재 Grab하고 있는 오브젝트를 기준으로 보간하여 움직인다.
+        UKismetSystemLibrary::MoveComponentTo
+        (
+            playerClass->GetCapsuleComponent(), // 보간할 대상
+            TargetRelativeLocation,             // 상대 타겟 위치
+            TargetRelativeRotation,             // 상대 타겟 회전
+            false,                              // true이면 보간 중에 완화 (즉, 천천히 종료)
+            false,                              // true 인 경우 보간하는 동안 천천히 시작 (즉, 천천히 시작)
+            0.2f,                               // 보간 시간
+            false,                              // true이면 회전에 항상 최단 경로를 사용
+            EMoveComponentAction::Move,         // 필요한 움직임 행동
+            LatentInfo                          // The latent action
+        );
+```
   
 ## Foot IK System
   
