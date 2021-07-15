@@ -20,7 +20,7 @@
   
 ### 1. 주변 적 액터 구하기
   
-<img src="https://user-images.githubusercontent.com/48229283/125272355-b5aa8800-e346-11eb-8061-6faba0a0d21d.PNG" width="300" height="300">  
+![11](https://user-images.githubusercontent.com/48229283/125843707-53b42daf-57ee-46c3-a5aa-78ee2066c37d.PNG)
   
 * SweepMultiByChannel을 사용하여 스윕멀티
 * DebugShape로 원을 그린다
@@ -63,7 +63,7 @@ void UCS_TargetingSystem::DetectEnemyObjects()
   
 ### 2. 장애물 감지하기
   
-<img src="https://user-images.githubusercontent.com/48229283/125273296-bc85ca80-e347-11eb-9d40-71e2708999e6.PNG" width="300" height="300">  
+![22](https://user-images.githubusercontent.com/48229283/125843708-00d9c8de-7bf9-449c-a835-e1ba6d8767f1.PNG)
   
 * LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
 * 벽과 충돌한다면 해당 적은 제외
@@ -103,7 +103,7 @@ bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
   
 ### 3. 게임 화면안에 적 액터가 있는지 확인하기
   
-<img src="https://user-images.githubusercontent.com/48229283/125273580-08387400-e348-11eb-8bc6-3a4a6720f15a.PNG" width="500" height="300">  
+![33](https://user-images.githubusercontent.com/48229283/125843710-49e95fbb-a6b2-4250-9a6a-36550ba3ed2e.PNG)
   
 * 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인 
 * 화면 안에 존재하지 않는다면 해당 적은 제외
@@ -441,3 +441,5 @@ FVector UCS_ClimbSystem::MoveToLocation()
 ![footik1](https://user-images.githubusercontent.com/48229283/125841320-159c57a7-521d-4c89-8707-4767205570a9.gif) | ![footik2](https://user-images.githubusercontent.com/48229283/125841334-7d79a38e-cbb9-4f41-8923-04cd002a312a.png)
 :-------------------------:|:-------------------------:
 IK1 | IK2
+  
+### HipOffset
