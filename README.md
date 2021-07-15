@@ -164,7 +164,7 @@ Light Attack | Heavy Attack | Combined
 ## 몬스터 FSM
 ### 유한상태 기계 플로우
 
-<img src="https://user-images.githubusercontent.com/48229283/125384154-6f4f3a80-e3d3-11eb-92ff-ba9dbbec2e97.PNG" width="510" height="300">  
+![fsm2](https://user-images.githubusercontent.com/48229283/125847148-91bfbfc7-72bf-46ca-b882-9f1e10cf061f.PNG)
   
 * 공격패턴마다 해당하는 사거리(Range)와 시야각(Angle)을 가진다.
 * 공격 딜레이 중 일때는 랜덤한 방향으로 이동
@@ -173,7 +173,8 @@ Light Attack | Heavy Attack | Combined
   
   
 ### 클래스 상속
-<img src="https://user-images.githubusercontent.com/48229283/125539631-d493bacf-c541-4bdf-95e8-2b9cffc388f2.PNG" width="400" height="250">  
+  
+![클래스상속22](https://user-images.githubusercontent.com/48229283/125847161-427f0e2b-eaca-4915-8cb4-def8d738c40f.PNG)
   
 * Enemy 베이스 클래스를 상속하여 override하여 사용
   
@@ -231,7 +232,7 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
   
 * 배열에 랜덤으로 결정된 공격패턴 Add
   
-<img src="https://user-images.githubusercontent.com/48229283/125547501-2755cb13-1941-401e-8130-49fd639e672c.PNG" width="430" height="220">  
+![컴뱃액션2](https://user-images.githubusercontent.com/48229283/125847171-c53b842b-6352-4d17-aa3e-0d11056c5ca5.PNG)
   
 * 배열에 추가하면서 공격에 해당하는 사거리(AttackRange)와 시야각(AttackAngle) 할당
   
