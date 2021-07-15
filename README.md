@@ -339,9 +339,12 @@ void ACS_GhostTrail::TrailDissapearTimer()
 ## Climb System
 
 ### Grab Ledge
-![socketpelvis](https://user-images.githubusercontent.com/48229283/125717988-07c74545-05d1-49df-a759-464da7161e49.PNG)
   
 * Pelvis 본에 소켓을 추가한다.
+  
+![socketpelvis](https://user-images.githubusercontent.com/48229283/125717988-07c74545-05d1-49df-a759-464da7161e49.PNG)
+  
+
 
 
   
