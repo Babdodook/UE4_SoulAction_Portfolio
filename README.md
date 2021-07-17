@@ -538,3 +538,8 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
 	return UKismetMathLibrary::FInterpTo(footAlpha, displacement, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 }
 ```
+  
+* 루트본은 내려가고 왼쪽 다리는 Alpha값만큼 올라간 모습
+  
+![footdisplacement4](https://user-images.githubusercontent.com/48229283/126049341-df69edfa-cb85-460d-9119-7f6a5caef147.PNG)
+  
