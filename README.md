@@ -447,5 +447,6 @@ IK1 | IK2
 
 * 캐릭터의 발 밑으로 트레이스를 한다.
   
-![hipoffset1](https://user-images.githubusercontent.com/48229283/126048197-1886e42e-1938-4bc2-ace1-35144dccfc33.PNG)
+![hipoffset1](https://user-images.githubusercontent.com/48229283/126048197-1886e42e-1938-4bc2-ace1-35144dccfc33.PNG) | ![hipoffset2](https://user-images.githubusercontent.com/48229283/126048330-e3dfe1a9-6f40-48d5-b8ec-81f2130e0fef.PNG)
+:-------------------------:|:-------------------------:
   
