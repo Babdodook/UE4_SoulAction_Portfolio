@@ -409,6 +409,7 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
 
 ## 타겟팅 시스템
   
+![targeting1](https://user-images.githubusercontent.com/48229283/126050856-b37c2e91-1399-453c-adeb-63dd7e67a084.gif)
   
 ### 1. 주변 적 액터 구하기
   
@@ -475,12 +476,11 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
   
 ## 연계 공격
 #### Class Name : CS_Player  
-  
-Light Attack | Heavy Attack | Combined
+
+![약공격1](https://user-images.githubusercontent.com/48229283/126050912-522f747c-483d-4caa-811c-f33871767d00.gif) | ![강공격1](https://user-images.githubusercontent.com/48229283/126050914-6a2a9675-34c2-4f5a-a30d-1827a71b52d6.gif) | ![혼합공격1](https://user-images.githubusercontent.com/48229283/126050916-eff4164e-5efc-4c56-a75c-6766e888514a.gif)
 :-------------------------:|:-------------------------:|:-------------------------:
-![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif) | ![강공격](https://user-images.githubusercontent.com/48229283/125267953-35822380-e342-11eb-96bd-7a0495e9db73.gif) | ![혼합공격](https://user-images.githubusercontent.com/48229283/125268668-dffa4680-e342-11eb-9f98-543d33519a55.gif)
-
-
+Light Attack | Heavy Attack | Combined
+  
 * 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용
 * 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정
 
