@@ -475,8 +475,7 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
   
   
 ## 연계 공격
-#### Class Name : CS_Player  
-
+  
 ![약공격1](https://user-images.githubusercontent.com/48229283/126050912-522f747c-483d-4caa-811c-f33871767d00.gif) | ![강공격1](https://user-images.githubusercontent.com/48229283/126050914-6a2a9675-34c2-4f5a-a30d-1827a71b52d6.gif) | ![혼합공격1](https://user-images.githubusercontent.com/48229283/126050916-eff4164e-5efc-4c56-a75c-6766e888514a.gif)
 :-------------------------:|:-------------------------:|:-------------------------:
 Light Attack | Heavy Attack | Combined
