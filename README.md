@@ -458,7 +458,9 @@ IK1 | IK2
 ```cpp
 void UCS_IKFootSystem::IKProcessing()
 {
-	//... 코드 생략
+	// Hip displacement
+	RFootDistance = IKHipTrace(RFootSocketName);
+	LFootDistance = IKHipTrace(LFootSocketName);
 
 	HipOffset = HipDisplacement(RFootDistance >= LFootDistance ? RFootDistance : LFootDistance);
 
