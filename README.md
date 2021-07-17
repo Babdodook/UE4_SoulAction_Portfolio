@@ -8,90 +8,11 @@
   
   
 # 구현 내용
-* [타겟팅 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#타겟팅-시스템)
-* [연계 공격](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#연계-공격)
 * [몬스터 FSM](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#몬스터-FSM)
 * [Climb(파쿠르)시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#Climb-System)
 * [Foot IK 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#Foot-IK-System)
-
-## 타겟팅 시스템
-#### Class Name : CS_TargetingSystem  
-  
-  
-### 1. 주변 적 액터 구하기
-  
-![11](https://user-images.githubusercontent.com/48229283/125843707-53b42daf-57ee-46c3-a5aa-78ee2066c37d.PNG)
-  
-* SweepMultiByChannel을 사용하여 스윕멀티
-* DebugShape로 원을 그린다
-* 적 액터 탐색하여 배열에 Add  
-  
-### 2. 장애물 감지하기
-  
-![22](https://user-images.githubusercontent.com/48229283/125843708-00d9c8de-7bf9-449c-a835-e1ba6d8767f1.PNG)
-  
-* LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
-* 벽과 충돌한다면 해당 적은 제외
-  
-### 3. 게임 화면안에 적 액터가 있는지 확인하기
-  
-![33](https://user-images.githubusercontent.com/48229283/125843710-49e95fbb-a6b2-4250-9a6a-36550ba3ed2e.PNG)
-  
-* 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인 
-* 화면 안에 존재하지 않는다면 해당 적은 제외
-* DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업
-  
-```cpp
-bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
-{
-	// APlayerController 캐스팅
-	const APlayerController* const PlayerController = Cast<const APlayerController>(Player->GetController());
-
-	// 월드 좌표 -> 스크린 좌표 변환
-	FVector2D ScreenLocation;
-	PlayerController->ProjectWorldLocationToScreen(Enemy->GetActorLocation(), ScreenLocation);
-
-	int32 ScreenX = ScreenLocation.X;
-	int32 ScreenY = ScreenLocation.Y;
-
-	// 타겟이 스크린좌표에서 스크린 크기와 높이 보다 큰 값을 가진다면, 화면 밖에 있는 것으로 판정한다.
-	if ((0 < ScreenX && ScreenX < ScreenWidth) && (0 < ScreenY && ScreenY < ScreenHeight))
-		return true;
-	else
-		return false;
-}
-```
-  
-  
-### 4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정
-  
-```cpp
-// 플레이어와 가장 가까운 적을 찾아냄
-	ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
-	for (auto& enemy : EnemyInSight)
-	{
-		if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
-		{
-			minDistanceEnemy = enemy;
-		}
-	}
-
-	// 가장 가까운 적 타겟으로 지정
-	LockOnTarget(minDistanceEnemy);
-```
-  
-  
-## 연계 공격
-#### Class Name : CS_Player  
-  
-Light Attack | Heavy Attack | Combined
-:-------------------------:|:-------------------------:|:-------------------------:
-![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif) | ![강공격](https://user-images.githubusercontent.com/48229283/125267953-35822380-e342-11eb-96bd-7a0495e9db73.gif) | ![혼합공격](https://user-images.githubusercontent.com/48229283/125268668-dffa4680-e342-11eb-9f98-543d33519a55.gif)
-
-
-* 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용
-* 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정
-
+* [타겟팅 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#타겟팅-시스템)
+* [연계 공격](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#연계-공격)
 
 ## 몬스터 FSM
 ### 유한상태 기계 플로우
@@ -478,3 +399,83 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
 ![footdisplacement4](https://user-images.githubusercontent.com/48229283/126049341-df69edfa-cb85-460d-9119-7f6a5caef147.PNG)
     
 ### Foot Rotation
+  
+
+## 타겟팅 시스템
+#### Class Name : CS_TargetingSystem  
+  
+  
+### 1. 주변 적 액터 구하기
+  
+![11](https://user-images.githubusercontent.com/48229283/125843707-53b42daf-57ee-46c3-a5aa-78ee2066c37d.PNG)
+  
+* SweepMultiByChannel을 사용하여 스윕멀티
+* DebugShape로 원을 그린다
+* 적 액터 탐색하여 배열에 Add  
+  
+### 2. 장애물 감지하기
+  
+![22](https://user-images.githubusercontent.com/48229283/125843708-00d9c8de-7bf9-449c-a835-e1ba6d8767f1.PNG)
+  
+* LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
+* 벽과 충돌한다면 해당 적은 제외
+  
+### 3. 게임 화면안에 적 액터가 있는지 확인하기
+  
+![33](https://user-images.githubusercontent.com/48229283/125843710-49e95fbb-a6b2-4250-9a6a-36550ba3ed2e.PNG)
+  
+* 화면 해상도(Resolution)를 구하여 화면 안에 적이 있는지 확인 
+* 화면 안에 존재하지 않는다면 해당 적은 제외
+* DebugShape로 원을 그리면서 탐색하였기 때문에 플레이어의 시야에서 벗어난 적을 걸러내기 위한 작업
+  
+```cpp
+bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
+{
+	// APlayerController 캐스팅
+	const APlayerController* const PlayerController = Cast<const APlayerController>(Player->GetController());
+
+	// 월드 좌표 -> 스크린 좌표 변환
+	FVector2D ScreenLocation;
+	PlayerController->ProjectWorldLocationToScreen(Enemy->GetActorLocation(), ScreenLocation);
+
+	int32 ScreenX = ScreenLocation.X;
+	int32 ScreenY = ScreenLocation.Y;
+
+	// 타겟이 스크린좌표에서 스크린 크기와 높이 보다 큰 값을 가진다면, 화면 밖에 있는 것으로 판정한다.
+	if ((0 < ScreenX && ScreenX < ScreenWidth) && (0 < ScreenY && ScreenY < ScreenHeight))
+		return true;
+	else
+		return false;
+}
+```
+  
+  
+### 4. 위 조건을 모두 통과한 적 액터 중 플레이어와 가장 가까운 적을 타겟으로 지정
+  
+```cpp
+// 플레이어와 가장 가까운 적을 찾아냄
+	ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
+	for (auto& enemy : EnemyInSight)
+	{
+		if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
+		{
+			minDistanceEnemy = enemy;
+		}
+	}
+
+	// 가장 가까운 적 타겟으로 지정
+	LockOnTarget(minDistanceEnemy);
+```
+  
+  
+## 연계 공격
+#### Class Name : CS_Player  
+  
+Light Attack | Heavy Attack | Combined
+:-------------------------:|:-------------------------:|:-------------------------:
+![콤보공격_Trim](https://user-images.githubusercontent.com/48229283/125266409-c48e3c00-e340-11eb-86fe-b8af8cee4375.gif) | ![강공격](https://user-images.githubusercontent.com/48229283/125267953-35822380-e342-11eb-96bd-7a0495e9db73.gif) | ![혼합공격](https://user-images.githubusercontent.com/48229283/125268668-dffa4680-e342-11eb-9f98-543d33519a55.gif)
+
+
+* 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용
+* 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정
+
