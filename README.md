@@ -29,19 +29,8 @@
 ```cpp
 void UCS_TargetingSystem::DetectEnemyObjects()
 {
-	// 모든 배열 초기화
-	DetectedEnemy.Empty();
-	EnemyInScreen.Empty();
-	EnemyInSight.Empty();
-
-	TArray<FHitResult> OutHits;
-	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-
-	// 충돌 확인용 그리기
-	FCollisionShape DebugShape = FCollisionShape::MakeSphere(600.f);
-	if(bIsDrawDebug)
-		DrawDebugSphere(GetWorld(), Player->GetActorLocation(), DebugShape.GetSphereRadius(), 10, FColor::Blue, false, 1.5f);
-
+	//... 코드 생략
+	
 	// 스윕 멀티 트레이스
 	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, Player->GetActorLocation(), Player->GetActorLocation(), FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, DebugShape, TraceParams);
 
@@ -71,27 +60,16 @@ void UCS_TargetingSystem::DetectEnemyObjects()
 ```cpp
 bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
 {
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-
-	// 트레이스 시작, 끝 포지션
-	// 플레이어 위치 -> 적 위치
-	FVector StartPoint = Player->GetActorLocation();
-	FVector EndPoint = Enemy->GetActorLocation();
-
-	float distance = FVector::Dist(StartPoint, EndPoint);
+	//... 코드 생략
 
 	// 플레이어 -> 적 라인 트레이스
 	bool isHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel3, TraceParams);
-	if (bIsDrawDebug)
-		DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Green, false, 3.f);
 
 	if (isHit)
 	{
 		ACS_Enemy* HitEnemy = Cast<ACS_Enemy>(HitResult.GetActor());
 		if (HitEnemy != nullptr && HitEnemy == Enemy)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Hit Success : %s"), *HitEnemy->GetName());
 			return true;
 		}
 	}
