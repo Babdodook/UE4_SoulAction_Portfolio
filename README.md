@@ -512,3 +512,29 @@ void UCS_IKFootSystem::IKProcessing()
   
 ![footdisplacement2](https://user-images.githubusercontent.com/48229283/126049104-b1253661-690a-4cf7-9746-269e791dfb8f.PNG) | ![footdisplacement3](https://user-images.githubusercontent.com/48229283/126049105-e354ec38-1f02-4fa4-b0fe-389a38752ecc.PNG)
 :-------------------------:|:-------------------------:
+  
+* Leg의 역운동 정도를 결정하는 Alpha값을 지정해준다.
+  
+```cpp
+void UCS_IKFootSystem::IKProcessing()
+{
+	//...
+
+	RFootAlpha = FootDisplacement(RFootDistance, RFootAlpha);
+	LFootAlpha = FootDisplacement(LFootDistance, LFootAlpha);
+
+	//...
+}
+
+float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha)
+{
+	float displacement; 
+	// 나누어주는 AlphaDivValue는 여러 차례 테스트하며 적정한 값을 사용하였다.
+	if (distanceToGround != 0.f)
+		displacement = (TraceDistance - distanceToGround) / AlphaDivValue;
+	else
+		displacement = 0.f;
+	
+	return UKismetMathLibrary::FInterpTo(footAlpha, displacement, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+}
+```
