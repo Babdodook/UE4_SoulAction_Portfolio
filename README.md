@@ -15,6 +15,10 @@
 * [연계 공격](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#연계-공격)
 
 ## 몬스터 FSM
+  
+![attack1](https://user-images.githubusercontent.com/48229283/126050728-327a1136-3c65-435b-accb-d81a43aac9a2.gif) | ![attack3](https://user-images.githubusercontent.com/48229283/126050733-68c43cac-b7ed-4b30-bd46-45e8e421bcfa.gif)
+:-------------------------:|:-------------------------:
+  
 ### 유한상태 기계 플로우
 
 ![fsm2](https://user-images.githubusercontent.com/48229283/125847148-91bfbfc7-72bf-46ca-b882-9f1e10cf061f.PNG)
@@ -131,7 +135,6 @@ public:
   
 ![잔상1](https://user-images.githubusercontent.com/48229283/125550644-92a17e64-d83b-44f4-986e-e7e2d5029476.gif) | ![잔상2](https://user-images.githubusercontent.com/48229283/125550654-b84c3b63-1585-49ff-b4b8-618fcf2ab462.gif)
 :-------------------------:|:-------------------------:
-잔상1 | 잔상2
   
   
 * 잔상 머터리얼 준비
