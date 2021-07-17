@@ -24,31 +24,7 @@
   
 * SweepMultiByChannel을 사용하여 스윕멀티
 * DebugShape로 원을 그린다
-* 적 액터 탐색하여 배열에 Add
-  
-```cpp
-void UCS_TargetingSystem::DetectEnemyObjects()
-{
-	//... 코드 생략
-	
-	// 스윕 멀티 트레이스
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, Player->GetActorLocation(), Player->GetActorLocation(), FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, DebugShape, TraceParams);
-
-	if (isHit)
-	{
-		for (auto& Hit : OutHits)
-		{
-			ACS_Enemy* enemy = Cast<ACS_Enemy>(Hit.GetActor());
-			if (enemy && enemy->IsAlive())
-			{
-				// 중복된 것 Add하지 않음
-				DetectedEnemy.AddUnique(enemy);
-			}
-		}
-	}
-}
-```
-  
+* 적 액터 탐색하여 배열에 Add  
   
 ### 2. 장애물 감지하기
   
@@ -56,28 +32,6 @@ void UCS_TargetingSystem::DetectEnemyObjects()
   
 * LineTraceSingleByChannel을 통해 미리 탐색한 적을 향해 라인트레이스
 * 벽과 충돌한다면 해당 적은 제외
-  
-```cpp
-bool UCS_TargetingSystem::IsWallExist(AActor* Enemy)
-{
-	//... 코드 생략
-
-	// 플레이어 -> 적 라인 트레이스
-	bool isHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel3, TraceParams);
-
-	if (isHit)
-	{
-		ACS_Enemy* HitEnemy = Cast<ACS_Enemy>(HitResult.GetActor());
-		if (HitEnemy != nullptr && HitEnemy == Enemy)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-```
-  
   
 ### 3. 게임 화면안에 적 액터가 있는지 확인하기
   
