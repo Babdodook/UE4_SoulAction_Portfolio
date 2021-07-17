@@ -452,5 +452,33 @@ IK1 | IK2
 * 두 트레이스된 Distance를 비교하여 큰 쪽을 반환한다.
   
 ![hipoffset2](https://user-images.githubusercontent.com/48229283/126048443-8883956d-5fc9-4ebc-bd94-0df5be15e627.PNG)
-
   
+* Distance만큼 메시를 캐릭터의 캡슐보다 밑으로 내려주어야 한다.
+
+```cpp
+void UCS_IKFootSystem::IKProcessing()
+{
+	//... 코드 생략
+
+	HipOffset = HipDisplacement(RFootDistance >= LFootDistance ? RFootDistance : LFootDistance);
+
+	//... 코드 생략
+}
+
+float UCS_IKFootSystem::HipDisplacement(float distanceToGround)
+{
+	float displacement;
+	// CapsuleHalfHeight를 빼는 이유는 트레이스 시작위치가 캡슐의 절반 높이이기 때문.
+	if (distanceToGround != 0.f)
+		displacement = CapsuleHalfHeight - distanceToGround;
+	else
+		displacement = 0.f;
+
+	return UKismetMathLibrary::FInterpTo(HipOffset, displacement, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+}
+```
+
+* HipOffset값을 애니메이션 블루프린트의 본 트랜스폼 변경을 이용하여 Z값을 조절한다.
+* **결과적으로 HipOffset값만큼 메시가 캡슐 아래로 내려가게 된다.**
+  
+![hipoffset3](https://user-images.githubusercontent.com/48229283/126048723-d9df33bb-7c21-49ee-9628-57c9a0512edc.PNG)
