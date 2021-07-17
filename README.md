@@ -164,6 +164,8 @@ Light Attack | Heavy Attack | Combined
   
 * 사거리와 시야각 만족시 공격
   
+![사거리시야각](https://user-images.githubusercontent.com/48229283/126049883-d90d1373-9f6d-4367-86ad-790db0b008d0.PNG)
+  
 ```cpp
 	// 공격 사정거리와 각도 모두 만족할 경우에 공격이 가능하도록 한다.
 	// 공격 딜레이가 0이하 일때 실행한다.
