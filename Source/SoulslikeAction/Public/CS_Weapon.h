@@ -73,4 +73,13 @@ public:
 	/** 데미지 설정하기 */
 	UFUNCTION(BlueprintCallable)
 	void SetDamageAmount(float Value) { DamageAmount = Value; }
+
+	void SetBladeOnOff(bool Value);
+
+	FTimerHandle BladeOnOffTimerHandle;
+	float BladeOnOffTime;
+	float BladeZScale;
+	void BladeOnOffTimer();
+
+	void SetVisibility(bool Value);
 };

@@ -10,6 +10,7 @@
 #include "CS_Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ACS_Weapon::ACS_Weapon()
@@ -50,6 +51,12 @@ ACS_Weapon::ACS_Weapon()
 void ACS_Weapon::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FVector WeaponScale = WeaponBlade->GetRelativeScale3D();
+	WeaponScale.Z = 0.f;
+
+	WeaponBlade->SetRelativeScale3D(WeaponScale);
+	WeaponBladeCopy->SetRelativeScale3D(WeaponScale);
 }
 
 void ACS_Weapon::Tick(float DeltaTime)
@@ -123,7 +130,6 @@ void ACS_Weapon::PlayerWeaponCollisionCheck()
 			if (GEngine)
 			{
 				// screen log information on what was hit
-				UE_LOG(LogTemp, Warning, TEXT("hit result: %s"), *Hit.Actor->GetName());
 				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
 				// uncommnet to see more info on sweeped actor
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
@@ -183,11 +189,50 @@ void ACS_Weapon::EnemyWeaponCollisionCheck()
 			if (GEngine)
 			{
 				// screen log information on what was hit
-				UE_LOG(LogTemp, Warning, TEXT("hit result: %s"), *Hit.Actor->GetName());
 				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
 				// uncommnet to see more info on sweeped actor
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
 			}
 		}
 	}
+}
+
+void ACS_Weapon::SetBladeOnOff(bool Value)
+{
+	if (Value)
+	{
+		BladeZScale = 1.05f;
+	}
+	else
+	{
+		BladeZScale = -0.2f;
+	}
+
+	BladeOnOffTime = 2.f;
+
+	if (!GetWorldTimerManager().IsTimerActive(BladeOnOffTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(BladeOnOffTimerHandle);
+	}
+
+	GetWorldTimerManager().SetTimer(BladeOnOffTimerHandle, this, &ACS_Weapon::BladeOnOffTimer, GetWorld()->GetDeltaSeconds(), true);
+}
+
+void ACS_Weapon::BladeOnOffTimer()
+{
+	FVector WeaponScale = WeaponBlade->GetRelativeScale3D();
+	WeaponScale.Z = UKismetMathLibrary::Lerp(WeaponScale.Z, BladeZScale, 6.f * GetWorld()->GetDeltaSeconds());
+
+	WeaponBlade->SetRelativeScale3D(WeaponScale);
+	WeaponBladeCopy->SetRelativeScale3D(WeaponScale);
+
+	if (UKismetMathLibrary::NearlyEqual_FloatFloat(WeaponScale.Z, BladeZScale))
+	{
+		GetWorldTimerManager().ClearTimer(BladeOnOffTimerHandle);
+	}
+}
+
+void ACS_Weapon::SetVisibility(bool Value)
+{
+	SetActorHiddenInGame(Value);
 }

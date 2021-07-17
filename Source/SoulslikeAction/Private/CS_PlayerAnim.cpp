@@ -3,7 +3,9 @@
 
 #include "CS_PlayerAnim.h"
 #include "CS_Player.h"
+#include "CS_ClimbSystem.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
 
 UCS_PlayerAnim::UCS_PlayerAnim()
 {
@@ -17,7 +19,7 @@ UCS_PlayerAnim::UCS_PlayerAnim()
 void UCS_PlayerAnim::LoadMontageAssets()
 {
 	//static ConstructorHelpers::FObjectFinder<UAnimMontage> ATTACK_MONTAGE(TEXT("AttackMontage'/Game/Actors/Player/Animation/Montage/Attack1_Montage.Attack1_Montage'"));
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ROLL_MONTAGE(TEXT("RollMontage'/Game/Actors/Player/Animation/Montage/RollForward_Montage.RollForward_Montage'"));
+	//static ConstructorHelpers::FObjectFinder<UAnimMontage> ROLL_MONTAGE(TEXT("RollMontage'/Game/Actors/Player/Animation/Montage/RollForward_Montage.RollForward_Montage'"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> EQUIP_MONTAGE(TEXT("EquipMontage'/Game/Actors/Player/Animation/Montage/Equip_Montage.Equip_Montage'"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> UNARM_MONTAGE(TEXT("UnarmMontage'/Game/Actors/Player/Animation/Montage/Unarm_Montage.Unarm_Montage'"));
 
@@ -27,10 +29,10 @@ void UCS_PlayerAnim::LoadMontageAssets()
 		AttackMontage = ATTACK_MONTAGE.Object;
 	}*/
 
-	if (ROLL_MONTAGE.Succeeded())
+	/*if (ROLL_MONTAGE.Succeeded())
 	{
 		RollForwardMontage = ROLL_MONTAGE.Object;
-	}
+	}*/
 
 	if (EQUIP_MONTAGE.Succeeded())
 	{
@@ -126,6 +128,7 @@ void UCS_PlayerAnim::NativeInitializeAnimation()
 	if (Pawn == nullptr)
 	{
 		Pawn = TryGetPawnOwner();
+		playerClass = Cast<ACS_Player>(Pawn);
 	}
 
 	LightAttackAry.Add(LightAttack1Montage);
@@ -149,23 +152,24 @@ void UCS_PlayerAnim::UpdateAnimationProperties()
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
 		MovementSpeed = LateralSpeed.Size();
 
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("SpeedX: %f SpeedY: %f"), Speed.X, Speed.Y));
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Player MovementSpeed: %f"), MovementSpeed));
-
-		//MovementSpeed = prevSpeed;
-
-		//UE_LOG(LogTemp, Warning, TEXT("MovementSpeed : %f"), MovementSpeed);
-
 		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
+
+		if ((!playerClass->ClimbSystemComponent->bCanMoveLeft && playerClass->InputHorizontal < 0.f) ||
+			(!playerClass->ClimbSystemComponent->bCanMoveRight && playerClass->InputHorizontal > 0.f))
+		{
+			InputHorizontal = 0.f;
+		}
+		else
+			InputHorizontal = playerClass->InputHorizontal;
 	}
 }
 
 void UCS_PlayerAnim::PlayRollMontage()
 {
-	if (!Montage_IsPlaying(RollForwardMontage))
+	/*if (!Montage_IsPlaying(RollForwardMontage))
 	{
 		Montage_Play(RollForwardMontage);
-	}
+	}*/
 }
 
 void UCS_PlayerAnim::PlayMontage(UAnimMontage* Montage)

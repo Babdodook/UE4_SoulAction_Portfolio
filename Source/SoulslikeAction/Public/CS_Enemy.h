@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "CS_EnemyAnim.h"
+#include "CustomStruct.h"
 #include "EnumState.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "CS_Enemy.generated.h"
 
 class ACS_Weapon;
+class ACS_EnemySpawner;
 
 UCLASS()
 class SOULSLIKEACTION_API ACS_Enemy : public ACharacter
@@ -70,6 +73,8 @@ public:
 	/** 어그로 원 오버랩 시작*/
 	UFUNCTION()
 	virtual void AgroSphere_OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void ActiveAIBehaviour(AActor* Target);
 #pragma endregion
 
 
@@ -77,9 +82,6 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* currentMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	TSubclassOf<UDamageType> DamageTypeClass;
 
 	/** 시야 거리 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
@@ -202,6 +204,8 @@ public:
 
 	/** 죽음 상태 */
 	virtual void Die();
+
+	void Ragdoll();
 
 	/** 살아있는지 */
 	UFUNCTION(BlueprintCallable)
@@ -409,8 +413,30 @@ public:
 	UPROPERTY(EditAnywhere)
 	UMaterialInstance* Mat_GridInst;
 
+	ACS_EnemySpawner* Spawner;
+
+	UPROPERTY(EditAnywhere)
+	bool bIsDummy;
+
+	
+
 public:
 	void SetMeshMaterial(UMaterial* Mat);
+
+	void SetSpawner(ACS_EnemySpawner* _Spawner) { Spawner = _Spawner; }
+	ACS_EnemySpawner* GetSpawner() { return Spawner; }
+#pragma endregion
+
+
+#pragma region DataTable
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_AICombatData;
+
+	TArray<FName> RowNames;
+
+	TArray<FAICombatStruct> AICombatDataAry;
+
 #pragma endregion
 
 };

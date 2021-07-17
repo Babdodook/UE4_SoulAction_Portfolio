@@ -4,48 +4,33 @@
 
 #include "CoreMinimal.h"
 #include "CS_Enemy.h"
-#include "Engine/DataTable.h"
-#include "CS_Boss1.generated.h"
-
-class ACS_GhostTrail;
+#include "EnumState.h"
+#include "CS_TutorialAI.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SOULSLIKEACTION_API ACS_Boss1 : public ACS_Enemy
+class SOULSLIKEACTION_API ACS_TutorialAI : public ACS_Enemy
 {
 	GENERATED_BODY()
 
 public:
 
-	ACS_Boss1();
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ACS_GhostTrail> GhostTrailClass;
+	ACS_TutorialAI();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	class UCS_Boss1Anim* Boss1Anim;
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* ProjectileSpawnPoint;
+	ETutorialAIStatus TutorialAIStatus;
 
-public:
-	USceneComponent* GetProjectileSpawnPoint() { return ProjectileSpawnPoint; }
+	bool bIsSetCombatTarget;
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	void SpawnGhostTrail(float SpawnDelay);
-
-	FTimerHandle SpawnGhostTrailTimerHandle;
-	float SpawnGhostTrailTime;
-	void SpawnGhostTrailTimer();
 
 	virtual void Executed(AActor* Causer, FVector Location) override;
 
@@ -53,13 +38,19 @@ public:
 
 	virtual void ExecutedEnd() override;
 
-	virtual void Groggy(AActor* Causer) override;
-
 	virtual bool IsExecuteReady() override;
 
-	void CastSpell();
+	void SetTutorialAIStatus(ETutorialAIStatus Status) { TutorialAIStatus = Status; }
+	ETutorialAIStatus GetTutorialAIStatus() { return TutorialAIStatus; }
 
-	bool bTest;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+#pragma region UI
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TutorialText;
+
+	void SetTutorialQuest();
+#pragma endregion
 
 	// Functions
 protected:

@@ -83,9 +83,6 @@ float ULJSMathHelpers::GetAngleToTarget(AActor* OwnActor, AActor* Target)
 	// 호도 -> 각도 변환
 	float Angle = FMath::RadiansToDegrees(FMath::Acos(dot));
 
-	//if (Angle <= 45.f)
-	//	UE_LOG(LogTemp, Warning, TEXT("Angle to Target: %f"), Angle);
-
 	return Angle;
 }
 

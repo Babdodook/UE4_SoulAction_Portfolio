@@ -4,17 +4,25 @@
 #include "CS_Boss1.h"
 #include "CS_Weapon.h"
 #include "CS_GhostTrail.h"
+#include "CS_Boss1Anim.h"
+#include "CS_EnemySpawner.h"
+#include "CustomStruct.h"
 
+#include "Engine/DataTable.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Components/WidgetComponent.h"
 #include "Components/CanvasPanel.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/SceneComponent.h"
 
 ACS_Boss1::ACS_Boss1()
 {
-	
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSpawnPoint"));
+	ProjectileSpawnPoint->SetupAttachment(GetRootComponent());
+
+	DT_AICombatData = LoadObject<UDataTable>(nullptr, TEXT("DataTable'/Game/DataTable/BossAICombatSetting.BossAICombatSetting'"));
 }
 
 void ACS_Boss1::BeginPlay()
@@ -56,6 +64,26 @@ void ACS_Boss1::BeginPlay()
 	SetEnemyType(EEnemyType::ET_Boss);
 
 	bShowHealthBar = false;
+
+	Boss1Anim = Cast<UCS_Boss1Anim>(EnemyAnim);
+
+	
+	if(DT_AICombatData == nullptr)
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("DT_AICombatData == nullptr")));
+	else
+	{
+		RowNames = DT_AICombatData->GetRowNames();
+
+		for (int i = 0; i < RowNames.Num(); i++)
+		{
+			FAICombatStruct AICombatData = *(DT_AICombatData->FindRow<FAICombatStruct>(RowNames[i], RowNames[i].ToString()));
+			//UE_LOG(LogTemp, Warning, TEXT("%d %f %f"), i, AICombatData.AttackRange, AICombatData.AttackAngle);
+
+			AICombatDataAry.Add(AICombatData);
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("%s %f %f"), *RowNames[i].ToString(), AICombatData.AttackRange, AICombatData.AttackAngle));
+		}
+	}
+	
 }
 
 void ACS_Boss1::Tick(float DeltaTime)
@@ -97,29 +125,32 @@ void ACS_Boss1::CombatBehaviour()
 	{
 		int32 randnum = GenerateCombatRandNum();
 
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("CombatBehaviour :: Now Action is %d"), randnum));
-
 		switch (randnum)
 		{
 		case 1:
 			CombatActions.Add(EnemyAnim->Attack1Montage);
-			SetAttackArea(300.f, 45.f);
+			SetAttackArea(AICombatDataAry[0].AttackRange, AICombatDataAry[0].AttackAngle);
+
 			break;
 		case 2:
 			CombatActions.Add(EnemyAnim->Attack2Montage);
-			SetAttackArea(400.f, 45.f);
+			SetAttackArea(AICombatDataAry[1].AttackRange, AICombatDataAry[1].AttackAngle);
+
 			break;
 		case 3:
 			CombatActions.Add(EnemyAnim->Attack3Montage);
-			SetAttackArea(600.f, 45.f);
+			SetAttackArea(AICombatDataAry[2].AttackRange, AICombatDataAry[2].AttackAngle);
+
 			break;
 		case 4:
 			CombatActions.Add(EnemyAnim->Attack4Montage);
-			SetAttackArea(500.f, 45.f);
+			SetAttackArea(AICombatDataAry[3].AttackRange, AICombatDataAry[3].AttackAngle);
+
 			break;
 		case 5:
 			CombatActions.Add(EnemyAnim->Attack5Montage);
-			SetAttackArea(300.f, 45.f);
+			SetAttackArea(AICombatDataAry[4].AttackRange, AICombatDataAry[4].AttackAngle);
+
 			break;
 		default:
 			break;
@@ -251,4 +282,12 @@ void ACS_Boss1::Groggy(AActor* Causer)
 bool ACS_Boss1::IsExecuteReady()
 {
 	return bIsCanExecute;
+}
+
+void ACS_Boss1::CastSpell()
+{
+	SetEnemyMovementStatus(EEnemyMovementStatus::EMS_CastSpell);
+
+	// 캐스팅 몽타주 실행
+	EnemyAnim->PlayMontage(Boss1Anim->CastMontage);
 }

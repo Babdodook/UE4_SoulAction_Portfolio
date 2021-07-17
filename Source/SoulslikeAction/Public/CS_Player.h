@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "CS_PlayerAnim.h"
+#include "CustomStruct.h"
+#include "EnumState.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "CS_Player.generated.h"
 
@@ -62,7 +65,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	FVector NotifyMoveDirection;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float InputVertical;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float InputHorizontal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -116,6 +122,12 @@ public:
 	// 구르기 방향
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	FVector EvadeDirection;
+
+	bool bIsWalk;
+public:
+	void Walk();
+
+	void WalkEnd();
 #pragma endregion
 
 
@@ -167,9 +179,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
 	bool bIsHeavyAttack;
 
-	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, Category = "Combat")
-	ACS_Enemy* BossEnemy;
-
 	// 쉬프트키를 눌렀는지.. 강 공격 준비하기 위함
 	bool bPressShift;
 #pragma endregion
@@ -213,19 +222,49 @@ public:
 
 
 #pragma region ClimbSystem
-	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "TargetSystem")
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
 	class UCS_ClimbSystem* ClimbSystemComponent;
 
-	void Climb();
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
+	class UArrowComponent* LeftArrow;
+
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
+	class UArrowComponent* RightArrow;
+
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
+	class UArrowComponent* LeftEdge;
+
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
+	class UArrowComponent* RightEdge;
+
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "ClimbSystem")
+	class UArrowComponent* UpArrow;
 
 	void ClimbUp();
+
+	void ClimbTurn();
+
+	void ClimbTurnBack();
+
+	void ClimbTurnBackEnd();
 #pragma endregion
+
+
+#pragma region IKFootSystem
+	UPROPERTY(VisibleInstanceOnly, BluePrintReadOnly, Category = "IKFootSystem")
+	class UCS_IKFootSystem* IKFootSystemComponent;
+
+#pragma endregion
+
 
 #pragma region Other
 	bool bCheckTranslate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	class UCanvasPanel* BossCanvasPanel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	class UCanvasPanel* TutorialTextCanvasPanel;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCameraShake> AttackCameraShake;
@@ -249,10 +288,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Anim")
 	UCS_PlayerAnim* playerAnim;
 
+	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, Category = "Combat")
+	ACS_Enemy* BossEnemy;
+
+	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, Category = "Combat")
+	class ACS_TutorialAI* TutorialEnemy;
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ACS_Weapon> WeaponClass;
 
+public:
 	ACS_Weapon* Weapon;
 #pragma endregion
 
@@ -328,9 +374,6 @@ public:
 	/** 루트모션중 로테이션 사용 */
 	void SetRootRotation(bool Value);
 
-	/** 무기 생성, 붙이기 */
-	void AttachWeapon();
-
 	/** bOnAttack 값 설정 */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetOnAttack(bool Value);
@@ -386,12 +429,19 @@ public:
 
 	void InputRMB();
 
+	void InputQ();
+
 	// 가드 지속 상태
 	void DefenseLoop();
 
 	// 강공격
 	UFUNCTION(BlueprintCallable)
 	void HeavyAttack();
+
+	void MWheelUp();
+
+	void MWheelDown();
+
 #pragma endregion
 
 
@@ -414,6 +464,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	ACS_Weapon* GetWeapon() { return Weapon; }
 
+	/** 무기 생성, 붙이기 */
+	void AttachWeapon();
+
+	void SetWeaponLocation(FName SocketName);
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetNewMoveDirection(MoveDirectionStatus Status);
 
@@ -433,5 +488,16 @@ public:
 
 	/** 스탯 정보 갱신 (UI 정보 반영) */
 	void UpdateStats(float DeltaTime);
+#pragma endregion
+
+
+#pragma region DataTable
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_DamageType;
+
+	TArray<FName> RowNames;
+
+	TArray<FDamageTypeStruct> DamageTypeAry;
+
 #pragma endregion
 };

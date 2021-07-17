@@ -7,6 +7,7 @@
 #include "EnumState.h"
 #include "LJSMathHelpers.h"
 #include "CS_ClimbSystem.h"
+#include "CS_IKFootSystem.h"
 
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -17,6 +18,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/ArrowComponent.h"
+#include "Engine/DataTable.h"
 
 
 // Sets default values
@@ -54,6 +58,25 @@ ACS_Player::ACS_Player()
 	ClimbSystemComponent = CreateDefaultSubobject<UCS_ClimbSystem>(TEXT("ClimbSystemComponent"));
 	ClimbSystemComponent->SetOwnerActor(this);
 
+	IKFootSystemComponent = CreateDefaultSubobject<UCS_IKFootSystem>(TEXT("IKFootSystemComponent"));
+	IKFootSystemComponent->SetOwnerActor(this);
+	IKFootSystemComponent->SetCapsuleHalfHeight(GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+
+	LeftArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("LeftArrow"));
+	LeftArrow->SetupAttachment(GetRootComponent());
+
+	RightArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("RightArrow"));
+	RightArrow->SetupAttachment(GetRootComponent());
+
+	LeftEdge = CreateDefaultSubobject<UArrowComponent>(TEXT("LeftEdge"));
+	LeftEdge->SetupAttachment(GetRootComponent());
+
+	RightEdge = CreateDefaultSubobject<UArrowComponent>(TEXT("RightEdge"));
+	RightEdge->SetupAttachment(GetRootComponent());
+
+	UpArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("UpArrow"));
+	UpArrow->SetupAttachment(GetRootComponent());
+
 	// Don't Rotate when the controller rotates
 	// Let that just affect the camera
 	bUseControllerRotationYaw = false;
@@ -65,7 +88,8 @@ ACS_Player::ACS_Player()
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.f, 0.0f); // 회전속도 설정, y값이 올라갈수록 회전 속도 올라감
 	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->GravityScale = 1.3f;
+	GetCharacterMovement()->AirControl = 0.5f;
 	SetRootRotation(false);
 
 	// Set our turn rates for input
@@ -108,6 +132,22 @@ ACS_Player::ACS_Player()
 
 	LightAttackNum = 0;
 	HeavyAttackNum = 0;
+
+	DT_DamageType = LoadObject<UDataTable>(nullptr, TEXT("DataTable'/Game/DataTable/PlayerDamageType.PlayerDamageType'"));
+
+	if (DT_DamageType == nullptr)
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("DT_DamageType == nullptr")));
+	else
+	{
+		RowNames = DT_DamageType->GetRowNames();
+
+		for (int i = 0; i < RowNames.Num(); i++)
+		{
+			FDamageTypeStruct DamageTypeData = *(DT_DamageType->FindRow<FDamageTypeStruct>(RowNames[i], RowNames[i].ToString()));
+
+			DamageTypeAry.Add(DamageTypeData);
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -116,8 +156,6 @@ void ACS_Player::BeginPlay()
 	Super::BeginPlay();
 
 	playerAnim = Cast<UCS_PlayerAnim>(GetMesh()->GetAnimInstance());
-	if (playerAnim != nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("playerAnim2 load succeeded"));
 
 	AttachWeapon();
 
@@ -136,6 +174,9 @@ void ACS_Player::Tick(float DeltaTime)
 
 	UpdateStats(DeltaTime);
 	
+	//if (!playerAnim->bIsInAir && !ClimbSystemComponent->bIsHanging)
+		//IKFootSystemComponent->IKProcessing();
+
 }
 
 // Called to bind functionality to input
@@ -171,13 +212,24 @@ void ACS_Player::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent
 	PlayerInputComponent->BindAxis("MoveForward", this, &ACS_Player::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ACS_Player::MoveRight);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACS_Player::InputQ);
+
 	// 카메라 회전 바인드
 	PlayerInputComponent->BindAxis("Turn", this, &ACS_Player::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up", this, &ACS_Player::LookUpAtRate);
 
 	// Climb 바인드
-	PlayerInputComponent->BindAction("Climb", IE_Pressed, this, &ACS_Player::Climb);
 	PlayerInputComponent->BindAction("ClimbUp", IE_Pressed, this, &ACS_Player::ClimbUp);
+	PlayerInputComponent->BindAction("ClimbTurnBack", IE_Pressed, this, &ACS_Player::ClimbTurnBack);
+	PlayerInputComponent->BindAction("ClimbTurnBack", IE_Released, this, &ACS_Player::ClimbTurnBackEnd);
+	PlayerInputComponent->BindAction("ClimbTurn", IE_Pressed, this, &ACS_Player::ClimbTurn);
+
+	// 마우스 휠 업, 다운
+	PlayerInputComponent->BindAction("MWheelUp", IE_Pressed, this, &ACS_Player::MWheelUp);
+	PlayerInputComponent->BindAction("MWheelDown", IE_Pressed, this, &ACS_Player::MWheelDown);
+
+	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &ACS_Player::Walk);
+	PlayerInputComponent->BindAction("Walk", IE_Released, this, &ACS_Player::WalkEnd);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ACS_Player::InputTestBtn);
 }
@@ -218,7 +270,7 @@ void ACS_Player::MoveRight(float Value)
 
 void ACS_Player::Move()
 {
-	if (MoveDirection.IsZero() || !bMoveable)
+	if (MoveDirection.IsZero() || !bMoveable || ClimbSystemComponent->bIsHanging || ClimbSystemComponent->bIsClimbingLedge)
 	{
 		LerpMoveSpeed = 0;
 		return;
@@ -226,7 +278,11 @@ void ACS_Player::Move()
 	
 	// 달리기가 true일 경우 선형보간으로 스피드를 올린다.
 	// 스프링암이 액터를 따라가는 속도도 선형보간으로 늦춘다.
-	if (playerAnim->bIsSprint && !bOnDefense /* MoveSpeedMultiplier <= OriginMoveSpeed + 30.f*/)
+	if (bIsWalk)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+	else if (playerAnim->bIsSprint && !bOnDefense /* MoveSpeedMultiplier <= OriginMoveSpeed + 30.f*/)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp<float, float>(GetCharacterMovement()->MaxWalkSpeed, SprintSpeed, 4 * GetWorld()->GetDeltaSeconds());
 		//MoveSpeedMultiplier = FMath::Lerp<float, float>(MoveSpeedMultiplier, OriginMoveSpeed + 30.f, 4 * GetWorld()->GetDeltaSeconds());
@@ -250,6 +306,16 @@ void ACS_Player::Move()
 	MoveDirection.Set(0.f, 0.f, 0.f);
 }
 
+void ACS_Player::Walk()
+{
+	bIsWalk = true;
+}
+
+void ACS_Player::WalkEnd()
+{
+	bIsWalk = false;
+}
+
 void ACS_Player::TurnAtRate(float Rate)
 {
 	if (TargetSystemComponent->GetIsLockOn() || bOnExecute) return;
@@ -266,7 +332,7 @@ void ACS_Player::LookUpAtRate(float Rate)
 
 void ACS_Player::Dodge()
 {
-	if (Controller != NULL && !bIsRolling && !bOnAttack && !bOnHit)
+	if (Controller != NULL && !bIsRolling && !bOnAttack && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging)
 	{
 		// 스태미나가 충분하지 않다면 Dodge 실패
 		if (Stamina - ((MaxStamina / 100) * 10.f) < 0.f)
@@ -279,10 +345,7 @@ void ACS_Player::Dodge()
 			StaminaTimerActive();
 			DecrementStamina((MaxStamina / 100) * 15.f);
 		}
-
-		// 마지막으로 입력받은 벡터를 가져온다
-		//EvadeDirection = MoveDirection;// GetLastMovementInputVector();
-		
+				
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -300,8 +363,6 @@ void ACS_Player::Dodge()
 
 		if (EvadeDirection.IsZero())
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("EvadeDirection is 0.f"));
-
 			EvadeDirection = GetActorForwardVector();
 		}
 		EvadeDirection.Normalize();
@@ -313,9 +374,7 @@ void ACS_Player::Dodge()
 			{
 				// 캐릭터를 마지막으로 입력받은 벡터로 회전시킨다
 				SetActorRotation(FRotator(0.f, ULJSMathHelpers::GetAngleToDirection(FVector::ForwardVector, EvadeDirection), 0.f));
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("%f %f %f"), EvadeDirection.X, EvadeDirection.Y, EvadeDirection.Z));
-
-				currentMontage = playerAnim->RollForwardMontage;
+				
 				playerAnim->PlayMontage(currentMontage);
 
 				bOnDefense = false;
@@ -324,14 +383,11 @@ void ACS_Player::Dodge()
 				playerAnim->bIsSprint = false;
 			}
 		}
-		//UE_LOG(LogTemp, Warning, TEXT("Start Evade"));
 	}
 }
 
 void ACS_Player::Attack()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Play Light Attack!!!"));
-
 	// 선입력 구간이 활성화 일때만 체크한다.
 	if (bIsInputAttackKey)
 	{
@@ -340,7 +396,7 @@ void ACS_Player::Attack()
 		bIsInputAttackKey = false;
 	}
 
-	if (Controller != NULL && !bOnAttack && !bIsRolling && bCanAttack && !bOnHit)
+	if (Controller != NULL && !bOnAttack && !bIsRolling && bCanAttack && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging)
 	{	
 		// 스태미나가 충분하지 않다면 공격 실패
 		if (Stamina - ((MaxStamina / 100) * 10.f) < 0.f)
@@ -350,18 +406,20 @@ void ACS_Player::Attack()
 		}
 		else
 		{
-			//StaminaTimerActive();
-			//DecrementStamina((MaxStamina / 100) * 15.f);
+			StaminaTimerActive();
+			DecrementStamina((MaxStamina / 100) * 15.f);
 		}
 
 		// 무기 장비중 아니면 true로 변경
 		if (!playerAnim->bIsEquip)
 		{
 			playerAnim->bIsEquip = true;
+			Weapon->SetBladeOnOff(true);
 		}
 
 		if (playerAnim != nullptr)
 		{
+			Weapon->SetDamageAmount(DamageTypeAry[LightAttackNum].DamageAmount);
 			SetLightAttackMontage();
 			playerAnim->PlayMontage(currentMontage);
 			currentMontage = nullptr;
@@ -379,8 +437,6 @@ void ACS_Player::Attack()
 
 void ACS_Player::HeavyAttack()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Input HeavyAttack!!!!!!!!!!"));
-
 	// 선입력 구간이 활성화 일때만 체크한다.
 	if (bIsInputAttackKey)
 	{
@@ -389,7 +445,7 @@ void ACS_Player::HeavyAttack()
 		bIsInputAttackKey = false;
 	}
 
-	if (Controller != NULL && !bOnAttack && !bIsRolling && bCanAttack && !bOnHit)
+	if (Controller != NULL && !bOnAttack && !bIsRolling && bCanAttack && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging)
 	{
 		// 스태미나가 충분하지 않다면 공격 실패
 		if (Stamina - ((MaxStamina / 100) * 10.f) < 0.f)
@@ -399,8 +455,8 @@ void ACS_Player::HeavyAttack()
 		}
 		else
 		{
-			//StaminaTimerActive();
-			//DecrementStamina((MaxStamina / 100) * 15.f);
+			StaminaTimerActive();
+			DecrementStamina((MaxStamina / 100) * 15.f);
 		}
 		playerAnim->bIsSprint = false;
 
@@ -413,10 +469,12 @@ void ACS_Player::HeavyAttack()
 		if (!playerAnim->bIsEquip)
 		{
 			playerAnim->bIsEquip = true;
+			Weapon->SetBladeOnOff(true);
 		}
 
 		if (playerAnim != nullptr)
 		{
+			Weapon->SetDamageAmount(DamageTypeAry[HeavyAttackNum + 2].DamageAmount);
 			SetHeavyAttackMontage();
 			playerAnim->PlayMontage(currentMontage);
 			currentMontage = nullptr;
@@ -434,7 +492,7 @@ void ACS_Player::HeavyAttack()
 
 void ACS_Player::SpecialAttack()
 {
-	if (Controller != NULL && !bOnAttack && !bIsRolling && !playerAnim->bIsSprint && bCanAttack && !bOnHit)
+	if (Controller != NULL && !bOnAttack && !bIsRolling && !playerAnim->bIsSprint && bCanAttack && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging)
 	{
 		FHitResult lineHit;
 		FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
@@ -443,7 +501,7 @@ void ACS_Player::SpecialAttack()
 		FVector StartPoint = GetActorLocation();
 		FVector EndPoint = GetActorLocation() + (GetActorForwardVector() * 150.f);
 
-		DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Yellow, false, 2.f);
+		//DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Yellow, false, 2.f);
 		bool isLineHit = GetWorld()->LineTraceSingleByChannel(lineHit, StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel3, TraceParams);
 
 		if (isLineHit)
@@ -453,8 +511,6 @@ void ACS_Player::SpecialAttack()
 			// 적 캐릭터 캐스팅 성공. 적 존재
 			if (enemy != nullptr)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("SpecialAttack Enemy Exist"));
-
 				// 처형 조건 만족하지 않았다면 리턴한다.
 				if (!enemy->IsExecuteReady()) return;
 
@@ -463,6 +519,7 @@ void ACS_Player::SpecialAttack()
 				{
 					currentMontage = playerAnim->SAttackMontage;
 					enemy->Executed(this, EndPoint);
+					TargetSystemComponent->SetUseSpringArmRotation(true);
 				}
 				// 일반 몬스터일 경우
 				else
@@ -500,7 +557,7 @@ void ACS_Player::SpecialAttack()
 
 void ACS_Player::Sprint()
 {
-	if (Controller != NULL && !bOnAttack && !bIsRolling && !bOnDefense && Stamina > 0.f && IsTryToMoveActor())
+	if (Controller != NULL && !bOnAttack && !bIsRolling && !bOnDefense && Stamina > 0.f && IsTryToMoveActor() && !playerAnim->bIsInAir && !ClimbSystemComponent->bIsHanging)
 	{
 		playerAnim->bIsSprint = true;
 
@@ -535,6 +592,8 @@ void ACS_Player::EquipWeapon()
 
 	currentMontage = playerAnim->bIsEquip ? playerAnim->EquipMontage : playerAnim->UnarmMontage;
 	playerAnim->PlayMontage(currentMontage);
+
+	Weapon->SetBladeOnOff(playerAnim->bIsEquip);
 }
  
 void ACS_Player::InputLMB()
@@ -544,10 +603,23 @@ void ACS_Player::InputLMB()
 
 void ACS_Player::InputSpaceBar()
 {
-	if(TargetSystemComponent->GetIsLockOn() && !playerAnim->bIsSprint)
-		Slide();
-	else
-		Dodge();
+	Slide();
+
+	if (ClimbSystemComponent->bIsHanging)
+	{
+		if (ClimbSystemComponent->bIsTurnBack)
+		{
+			FVector LaunchVelocity = (GetActorForwardVector() * -400.f) + FVector(0.f, 0.f, 700.f);
+			LaunchCharacter(LaunchVelocity, false, false);
+			ClimbSystemComponent->ExitLedge();
+			FRotator NewRot = UKismetMathLibrary::MakeRotator(GetActorRotation().Roll, GetActorRotation().Pitch, GetActorRotation().Yaw - 180.f);
+			SetActorRotation(NewRot);
+			return;
+		}
+
+		ClimbSystemComponent->ClimbJumpSide();
+		ClimbSystemComponent->ClimbJumpUp();
+	}
 }
 
 void ACS_Player::InputShift()
@@ -581,6 +653,7 @@ void ACS_Player::InputTestBtn()
 
 void ACS_Player::InputTab()
 {
+	TargetSystemComponent->SetTargetSearchType(ETargetSearchType::TST_None);
 	TargetSystemComponent->SearchTarget();
 }
 
@@ -589,27 +662,53 @@ void ACS_Player::InputRMB()
 	Defense();
 }
 
-void ACS_Player::Climb()
+void ACS_Player::InputQ()
 {
-	if (ClimbSystemComponent->bIsHanging)
-	{
+	if(!ClimbSystemComponent->bIsHanging)
+		ACharacter::Jump();
+	else
 		ClimbSystemComponent->ExitLedge();
-		return;
-	}
-
-	if (ClimbSystemComponent->IsCanJump())
-	{
-		playerAnim->bClimbJump = true;
-	}
 }
 
 void ACS_Player::ClimbUp()
 {
-	if (ClimbSystemComponent->bIsHanging && !ClimbSystemComponent->bIsClimbingLedge)
+	ClimbSystemComponent->ClimbLedge();
+}
+
+void ACS_Player::ClimbTurn()
+{
+	ClimbSystemComponent->ClimbTurn();
+}
+
+void ACS_Player::ClimbTurnBack()
+{
+	if (ClimbSystemComponent->bIsHanging)
 	{
-		ClimbSystemComponent->ClimbLedge();
-		return;
+		ClimbSystemComponent->bIsTurnBack = true;
+		playerAnim->PlayMontage(playerAnim->ClimbTurnBack_Montage);
 	}
+}
+
+void ACS_Player::ClimbTurnBackEnd()
+{
+	if (ClimbSystemComponent->bIsHanging)
+	{
+		ClimbSystemComponent->bIsTurnBack = false;
+
+		playerAnim->StopAllMontages(0.25f);
+	}
+}
+
+void ACS_Player::MWheelUp()
+{
+	TargetSystemComponent->SetTargetSearchType(ETargetSearchType::TST_WheelUp);
+	TargetSystemComponent->SearchTarget();
+}
+
+void ACS_Player::MWheelDown()
+{
+	TargetSystemComponent->SetTargetSearchType(ETargetSearchType::TST_WheelDown);
+	TargetSystemComponent->SearchTarget();
 }
 
 void ACS_Player::SetOnAttack(bool Value)
@@ -628,19 +727,18 @@ void ACS_Player::AttachWeapon()
 
 	// 무기 Attach
 	Weapon->SetOwner(this);
-	const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("Socket_twinblade");
+	SetWeaponLocation("Socket_twinblade");
+}
+
+void ACS_Player::SetWeaponLocation(FName SocketName)
+{
+	const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName(SocketName);
 	if (WeaponSocket)
 	{
 		WeaponSocket->AttachActor(Weapon, GetMesh());
 	}
-	Weapon->SetActorLocation(GetMesh()->GetSocketLocation("Socket_twinblade"));
-	Weapon->SetActorRotation(GetMesh()->GetSocketRotation("Socket_twinblade"));
-
-	/*
-	// 무기 Attach
-	Weapon_First->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_Weapon_R"));
-	Weapon_First->SetOwner(this);
-	*/
+	Weapon->SetActorLocation(GetMesh()->GetSocketLocation(SocketName));
+	Weapon->SetActorRotation(GetMesh()->GetSocketRotation(SocketName));
 }
 
 void ACS_Player::SetVelocityToDirection(FVector Direction, float Value)
@@ -663,24 +761,18 @@ void ACS_Player::PlayMovementAnimation()
 {
 	playerAnim->StopNowPlayingMontage();
 	currentMontage = nullptr;
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Play Movement Animation")));
 }
 
 void ACS_Player::RotateActor()
 {
 	if (TargetSystemComponent->GetIsLockOn()) return;
 
-	//FVector forwardDirection = FRotationMatrix(GetControlRotation()).GetScaledAxes(EAxis::X);
-	float angle = ULJSMathHelpers::GetAngleToDirection(GetActorForwardVector(), MoveDirection);
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Angle : %f"), angle));
-	float newAngle = FMath::Lerp<float, float>(0, angle, 10.f * GetWorld()->GetDeltaSeconds());
+	FRotator ControllRotation = GetControlRotation();
+	ControllRotation = FRotator(0.f, ControllRotation.Yaw, 0.f);
 
-	//SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + 10.f * DeltaTime, 0.f));
-	SetActorRotation(FRotator(0.f, GetActorRotation().Yaw + newAngle, 0.f));
+	FRotator NewRotator = UKismetMathLibrary::RInterpTo(GetActorRotation(), ControllRotation, GetWorld()->GetDeltaSeconds(), 6.0f);
 
-	//FRotator Rot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MoveDirection);
-	//SetActorRotation(FMath::RInterpTo(GetActorRotation(), Rot, GetWorld()->GetDeltaSeconds(), 2.f));
+	SetActorRotation(NewRotator);
 }
 
 float ACS_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -695,8 +787,6 @@ float ACS_Player::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		{
 			// 이미 가드 피격 애니메이션 실행 중인 경우에는 return 한다.
 			if (playerAnim->GetCurrentActiveMontage() == playerAnim->DefenseHitMontage) return DamageAmount;
-
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Defense Succeed"));
 
 			// 이동 조작 불가로 설정한다.
 			SetMoveable(false);
@@ -783,13 +873,11 @@ void ACS_Player::SetHitMontage(AActor* DamageCauser)
 
 void ACS_Player::Defense()
 {
-	if (Controller != NULL && !bOnDefense && !bOnAttack && !bIsRolling && !bOnHit)
+	if (Controller != NULL && !bOnDefense && !bOnAttack && !bIsRolling && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging && playerAnim->bIsEquip)
 	{
 		bOnDefense = true;
 
 		playerAnim->PlayMontage(playerAnim->DefenseMontage);
-
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Defense Start")));
 	}
 }
 
@@ -799,7 +887,6 @@ void ACS_Player::DefenseLoop()
 
 	if (Controller != NULL && bOnDefense)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Defense Loop")));
 		if (playerAnim->nowPlayingMontage != playerAnim->DefenseMontage)
 		{
 			playerAnim->Montage_JumpToSection("Loop", playerAnim->DefenseMontage);
@@ -816,8 +903,6 @@ void ACS_Player::EndDefense()
 	bOnDefense = false;
 	playerAnim->Montage_JumpToSection("End", currentMontage);
 	currentMontage = nullptr;
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Defense End")));
 }
 
 bool ACS_Player::IsDefenseSucceed(AActor* DamageCauser)
@@ -902,7 +987,7 @@ void ACS_Player::UpdateStats(float DeltaTime)
 
 void ACS_Player::Slide()
 {
-	if (Controller != NULL && !bIsRolling && !bOnAttack && !bOnHit)
+	if (Controller != NULL && !bIsRolling && !bOnAttack && !bOnHit && !playerAnim->bIsInAir && !playerAnim->bIsHanging)
 	{
 		// 스태미나가 충분하지 않다면 Dodge 실패
 		if (Stamina - ((MaxStamina / 100) * 10.f) < 0.f)
@@ -918,22 +1003,30 @@ void ACS_Player::Slide()
 
 		bool bRotate = false;
 
-		if ((InputVertical == 0 && InputHorizontal == 0) ||
-			(InputVertical == 1 && InputHorizontal == 0) ||
-			(InputVertical == 1 && InputHorizontal == 1) ||
-			(InputVertical == 1 && InputHorizontal == -1) ||
-			(InputVertical == -1 && InputHorizontal == 1) ||
-			(InputVertical == -1 && InputHorizontal == -1))
+		if (!TargetSystemComponent->GetIsLockOn())
 		{
-			currentMontage = playerAnim->SlideF_Montage;
+			currentMontage = playerAnim->DodgeMontage;
 			bRotate = true;
 		}
-		else if (InputVertical == 0 && InputHorizontal == 1)
-			currentMontage = playerAnim->SlideR_Montage;
-		else if (InputVertical == 0 && InputHorizontal == -1)
-			currentMontage = playerAnim->SlideL_Montage;
-		else if ((InputVertical == -1 && InputHorizontal == 0))
-			currentMontage = playerAnim->SlideB_Montage;
+		else
+		{
+			if ((InputVertical == 0 && InputHorizontal == 0) ||
+				(InputVertical == 1 && InputHorizontal == 0) ||
+				(InputVertical == 1 && InputHorizontal == 1) ||
+				(InputVertical == 1 && InputHorizontal == -1) ||
+				(InputVertical == -1 && InputHorizontal == 1) ||
+				(InputVertical == -1 && InputHorizontal == -1))
+			{
+				currentMontage = playerAnim->SlideF_Montage;
+				bRotate = true;
+			}
+			else if (InputVertical == 0 && InputHorizontal == 1)
+				currentMontage = playerAnim->SlideR_Montage;
+			else if (InputVertical == 0 && InputHorizontal == -1)
+				currentMontage = playerAnim->SlideL_Montage;
+			else if ((InputVertical == -1 && InputHorizontal == 0))
+				currentMontage = playerAnim->SlideB_Montage;
+		}
 
 		SetMoveable(false);
 
@@ -953,7 +1046,8 @@ void ACS_Player::Slide()
 
 			NotifyMoveVertical = InputVertical;
 			NotifyMoveHorizontal = InputHorizontal;
-			GetCharacterMovement()->bOrientRotationToMovement = true;
+			if(TargetSystemComponent->GetIsLockOn())
+				GetCharacterMovement()->bOrientRotationToMovement = true;
 			// 캐릭터를 마지막으로 입력받은 벡터로 회전시킨다
 			SetActorRotation(FRotator(0.f, ULJSMathHelpers::GetAngleToDirection(FVector::ForwardVector, EvadeDirection), 0.f));
 		}

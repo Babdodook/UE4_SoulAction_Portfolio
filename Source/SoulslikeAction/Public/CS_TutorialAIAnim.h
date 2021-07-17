@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "CS_EnemyAnim.h"
-#include "CS_Boss1Anim.generated.h"
+#include "CS_TutorialAIAnim.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SOULSLIKEACTION_API UCS_Boss1Anim : public UCS_EnemyAnim
+class SOULSLIKEACTION_API UCS_TutorialAIAnim : public UCS_EnemyAnim
 {
 	GENERATED_BODY()
 public:
 
-	UCS_Boss1Anim();
+	UCS_TutorialAIAnim();
 
 	// Functions
 protected:
@@ -25,10 +25,4 @@ protected:
 	virtual void LoadMontageAssets() override;
 
 	virtual void UpdateAnimationProperties() override;
-
-	// Montage
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
-	UAnimMontage* CastMontage;
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "EnumState.h"
 #include "CS_TargetingSystem.generated.h"
 
 class ACS_Player;
@@ -38,6 +39,22 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "System")
 	bool bIsDrawDebug;
+
+	ETargetSearchType TargetSearchType;
+
+	bool bUseSpringArmRotation;
+
+	// 스크린 크기
+	int ScreenWidth = 0;
+	int ScreenHeight = 0;
+public:
+	void SetTargetSearchType(ETargetSearchType Type) { TargetSearchType = Type; }
+	ETargetSearchType GetTargetSearchType() { return TargetSearchType; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetUseSpringArmRotation(bool Value) { bUseSpringArmRotation = Value; }
+	bool GetUseSpringArmRotation() { return bUseSpringArmRotation; }
+
 public:
 
 	/** 적 검출 및 타겟팅 */
@@ -76,4 +93,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetDrawDebug() { return bIsDrawDebug; }
+
+	void SetScreenSize(int& width, int& height);
+
+	ACS_Enemy* ChangeTargetEnemy();
 };

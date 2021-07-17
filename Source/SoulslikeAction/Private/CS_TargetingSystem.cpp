@@ -5,6 +5,9 @@
 #include "CS_Player.h"
 #include "CS_PlayerAnim.h"
 #include "CS_Enemy.h"
+#include "CS_Weapon.h"
+#include "EnumState.h"
+
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,24 +36,30 @@ void UCS_TargetingSystem::BeginPlay()
 	PlayerAnim->bIsLockOn = false;
 	bIsDrawDebug = false;
 	TargetEnemy = nullptr;	
+
+	SetTargetSearchType(ETargetSearchType::TST_None);
+
+	SetScreenSize(ScreenWidth, ScreenHeight);
 }
 
 void UCS_TargetingSystem::SearchTarget()
 {
 	// 이미 타겟지정된 적 존재
-	if (GetTargetEnemy() != nullptr)
+	if (GetTargetEnemy() != nullptr && GetTargetSearchType() == ETargetSearchType::TST_None)
 	{
 		// 타겟 해제
 		UnLockTarget();
 		return;
 	}
 
+
 	// 적 감지
 	DetectEnemyObjects();
-
 	// 감지된 적 없음. return
 	if (DetectedEnemy.Num() == 0) return;
 
+
+	SetScreenSize(ScreenWidth, ScreenHeight);
 	// 스크린에 있는지 확인
 	for (auto& enemy : DetectedEnemy)
 	{
@@ -60,12 +69,12 @@ void UCS_TargetingSystem::SearchTarget()
 			//UE_LOG(LogTemp, Warning, TEXT("%s is in Screen"), *enemy->GetName());
 		}
 	}
-
 	// 스크린에 존재하는 적 없음. return
 	if (EnemyInScreen.Num() == 0) return;
 
+
 	// 스크린에 존재하는 적과 플레이어 사이에 벽이 있는지 확인
-	for (auto& enemy : DetectedEnemy)
+	for (auto& enemy : EnemyInScreen)
 	{
 		if (IsWallExist(enemy))
 		{
@@ -73,22 +82,43 @@ void UCS_TargetingSystem::SearchTarget()
 			//UE_LOG(LogTemp, Warning, TEXT("%s is in Screen"), *enemy->GetName());
 		}
 	}
-
 	// 플레이어 시야에 존재하는 적 없음. return
 	if (EnemyInSight.Num() == 0) return;
 
-	// 플레이어와 가장 가까운 적을 찾아냄
-	ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
-	for (auto& enemy : EnemyInSight)
+
+	switch (GetTargetSearchType())
 	{
-		if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
+	case ETargetSearchType::TST_None:
 		{
-			minDistanceEnemy = enemy;
+			// 플레이어와 가장 가까운 적을 찾아냄
+			ACS_Enemy* minDistanceEnemy = EnemyInSight[0];
+			for (auto& enemy : EnemyInSight)
+			{
+				if (FVector::Dist(Player->GetActorLocation(), minDistanceEnemy->GetActorLocation()) >= FVector::Dist(Player->GetActorLocation(), enemy->GetActorLocation()))
+				{
+					minDistanceEnemy = enemy;
+				}
+			}
+
+			// 가장 가까운 적 타겟으로 지정
+			LockOnTarget(minDistanceEnemy);
 		}
+
+		break;
+	case ETargetSearchType::TST_WheelUp:
+	case ETargetSearchType::TST_WheelDown:
+
+		ACS_Enemy* minDistanceEnemy = ChangeTargetEnemy();
+
+		if (minDistanceEnemy != nullptr)
+		{
+			UnLockTarget();
+			LockOnTarget(minDistanceEnemy);
+		}
+
+		break;
 	}
 
-	// 가장 가까운 적 타겟으로 지정
-	LockOnTarget(minDistanceEnemy);
 	//UE_LOG(LogTemp, Warning, TEXT("Now %s is Target"), *TargetEnemy->GetName());
 }
 
@@ -133,13 +163,10 @@ bool UCS_TargetingSystem::IsEnemyInScreen(AActor* Enemy)
 	FVector2D ScreenLocation;
 	PlayerController->ProjectWorldLocationToScreen(Enemy->GetActorLocation(), ScreenLocation);
 
-	int32 ScreenWidth = 0;
-	int32 ScreenHeight = 0;
-	PlayerController->GetViewportSize(ScreenWidth, ScreenHeight);
-
 	int32 ScreenX = ScreenLocation.X;
 	int32 ScreenY = ScreenLocation.Y;
 
+	// 타겟이 스크린좌표에서 스크린 크기와 높이 보다 큰 값을 가진다면, 화면 밖에 있는 것으로 판정한다.
 	if ((0 < ScreenX && ScreenX < ScreenWidth) && (0 < ScreenY && ScreenY < ScreenHeight))
 		return true;
 	else
@@ -187,7 +214,8 @@ void UCS_TargetingSystem::LockOnTarget(ACS_Enemy* Target)
 	DesiredRotator = Player->GetController()->GetControlRotation();
 
 	// 일반 몬스터일 경우에만 실행한다.
-	if (GetTargetEnemy()->GetEnemyType() == EEnemyType::ET_Normal)
+	if (GetTargetEnemy()->GetEnemyType() == EEnemyType::ET_Normal ||
+		GetTargetEnemy()->GetEnemyType() == EEnemyType::ET_TutoAI)
 	{
 		// 적 체력바 켜기
 		GetTargetEnemy()->SetWidgetVisible(true);
@@ -195,7 +223,10 @@ void UCS_TargetingSystem::LockOnTarget(ACS_Enemy* Target)
 
 	// 장비 착용하고 있지않다면 bIsEquip true
 	if (!PlayerAnim->bIsEquip)
+	{
 		PlayerAnim->bIsEquip = true;
+		Player->Weapon->SetBladeOnOff(true);
+	}
 }
 
 void UCS_TargetingSystem::UnLockTarget()
@@ -226,39 +257,61 @@ void UCS_TargetingSystem::RotateToTarget()
 		return;
 	}
 
-	//FRotator playerRotator = Player->GetActorRotation();
-	//FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(Player->GetActorLocation(), TargetEnemy->GetActorLocation());
-	//DesiredRotator = FMath::RInterpTo(playerRotator, FRotator{ playerRotator.Pitch, LookAtRotator.Yaw, playerRotator.Roll }, GetWorld()->GetDeltaSeconds(), 10.f);
+	// New Rotate
+	FRotator TargetRot;
+	FRotator ControllerRot;
+	if (!bUseSpringArmRotation)
+	{
+		TargetRot = UKismetMathLibrary::FindLookAtRotation(Player->GetActorLocation(), TargetEnemy->GetActorLocation());
+		ControllerRot = UKismetMathLibrary::MakeRotator(TargetRot.Roll, TargetRot.Pitch - 15.f, TargetRot.Yaw);
+	}
+	else
+	{
+		ControllerRot = UKismetMathLibrary::FindLookAtRotation(Player->SpringArm->GetComponentLocation(), TargetEnemy->GetActorLocation());
+	}
 
-	
-
-	//FRotator ContorllerRotator = Player->GetController()->GetControlRotation();
-	FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(Player->SpringArm->GetComponentLocation(), TargetEnemy->GetActorLocation());
-	//FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(Player->FollowCamera->GetComponentLocation() , TargetEnemy->GetActorLocation());
-	//FRotator TargetRotator = UKismetMathLibrary::FindLookAtRotation(Player->GetActorLocation(), TargetEnemy->GetActorLocation());
-
-
-	DesiredRotator = FMath::RInterpTo(DesiredRotator, TargetRotator, GetWorld()->GetDeltaSeconds(), 10.f);
-	//Player->GetInstigator()->GetController()->SetControlRotation(DesiredRotator);
+	DesiredRotator = FMath::RInterpTo(DesiredRotator, ControllerRot, GetWorld()->GetDeltaSeconds(), 10.f);
 	Player->GetController()->SetControlRotation(DesiredRotator);
 
-	/*const FRotator LookedAtCameraRotation = FMath::RInterpConstantTo(Player->GetControlRotation(),
-		LookAtRotator + FRotator{ -20.f, 0.f, 0.f },
-		GetWorld()->GetDeltaSeconds(),
-		300.f);
+}
 
-	Player->GetInstigator()->GetController()->SetControlRotation(LookedAtCameraRotation);
+void UCS_TargetingSystem::SetScreenSize(int& width, int& height)
+{
+	width = GSystemResolution.ResX;
+	height = GSystemResolution.ResY;
+}
 
+ACS_Enemy* UCS_TargetingSystem::ChangeTargetEnemy()
+{
+	const APlayerController* const PlayerController = Cast<const APlayerController>(Player->GetController());
 
-	const FRotator PlayerRotation = Player->GetActorRotation();
+	int minDistance = 0;
+	ACS_Enemy* minDistanceEnemy = nullptr;
 
-	Player->SetActorRotation(FMath::RInterpConstantTo(PlayerRotation,
-		FRotator{
-			PlayerRotation.Pitch,
-			LookAtRotator.Yaw,
-			PlayerRotation.Roll
-		},
-		GetWorld()->GetDeltaSeconds(),
-		300.f));*/
+	int ScreenHalfWidth = ScreenWidth / 2;
 
+	for (auto& enemy : EnemyInSight)
+	{
+		if (GetTargetEnemy() == enemy)
+			continue;
+
+		// 월드 좌표 -> 스크린 좌표 변환
+		FVector2D ScreenLocation;
+		PlayerController->ProjectWorldLocationToScreen(enemy->GetActorLocation(), ScreenLocation);
+
+		int32 ScreenX = ScreenLocation.X;
+		int32 ScreenY = ScreenLocation.Y;
+
+		if (0 < ScreenX && (GetTargetSearchType() == ETargetSearchType::TST_WheelUp ? ScreenX < ScreenHalfWidth : ScreenX > ScreenHalfWidth) &&
+			(0 < ScreenY && ScreenY < ScreenHeight))
+		{
+			if (!minDistance || (GetTargetSearchType() == ETargetSearchType::TST_WheelUp ? ScreenX > minDistance : ScreenX < minDistance))
+			{
+				minDistance = ScreenX;
+				minDistanceEnemy = enemy;
+			}
+		}
+	}
+
+	return minDistanceEnemy;
 }

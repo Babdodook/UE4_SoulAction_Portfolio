@@ -40,8 +40,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* SAttack2Montage;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage")
-	UAnimMontage* RollForwardMontage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* DodgeMontage;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* EquipMontage;
@@ -94,6 +94,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* ClimbUp_Montage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbJumpLeft_Montage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbJumpRight_Montage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbTurnLeft_Montage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbTurnRight_Montage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbJumpUp_Montage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* ClimbTurnBack_Montage;
+
 	UAnimMontage* nowPlayingMontage;
 
 	TArray<UAnimMontage*> LightAttackAry;
@@ -131,6 +149,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	class APawn* Pawn;
 
+	class ACS_Player* playerClass;
+
 	UFUNCTION(BlueprintCallable, Category = Montage)
 	void SetAnimSpeed(float Value);
 
@@ -164,8 +184,8 @@ public:
 	bool bIsHanging;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
-	bool bClimbJump;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsClimbingUp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
+	float InputHorizontal;
 };

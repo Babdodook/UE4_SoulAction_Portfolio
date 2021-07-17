@@ -46,14 +46,14 @@ ACS_Enemy::ACS_Enemy()
 
 	AIStopDistance = 25.f;
 
-	UE_LOG(LogTemp, Warning, TEXT("Run ACS_Enemy()"));
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned
 void ACS_Enemy::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	AIController = Cast<AAIController>(GetController());
 	EnemyAnim = Cast<UCS_EnemyAnim>(GetMesh()->GetAnimInstance());
 
@@ -93,8 +93,6 @@ void ACS_Enemy::Tick(float DeltaTime)
 	{
 		// 공격을 실행한다.
 		Attack();
-
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Enemy Can Attack / Range: %f / Angle: %f"), GetTargetDistance(), GetAngleToTargetCross()));
 	}
 }
 
@@ -114,22 +112,36 @@ void ACS_Enemy::AgroSphere_OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 
 	if (OtherActor)
 	{
-		ACS_Player* Player = Cast<ACS_Player>(OtherActor);
-		if (Player)
+		if (GetEnemyType() == EEnemyType::ET_TutoAI)
 		{
+			ACS_Player* Player = Cast<ACS_Player>(OtherActor);
+			//CanvasPanel = Player->TutorialTextCanvasPanel;
 			CombatTarget = Player;
-			EnemyAnim->SetTargetExist(true);
-			MoveToTarget(CombatTarget);
-
-			if (GetEnemyType() == EEnemyType::ET_Boss)
-			{
-				Player->BossEnemy = this;
-				CanvasPanel = Player->BossCanvasPanel;
-
-				bShowHealthBar = true;
-			}
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Player Detect"));
+			return;
 		}
+
+		ActiveAIBehaviour(OtherActor);
+	}
+}
+
+void ACS_Enemy::ActiveAIBehaviour(AActor* Target)
+{
+	ACS_Player* Player = Cast<ACS_Player>(Target);
+	if (Player && !bIsDummy)
+	{
+		CombatTarget = Player;
+		EnemyAnim->SetTargetExist(true);
+		MoveToTarget(CombatTarget);
+
+		if (GetEnemyType() == EEnemyType::ET_Boss)
+		{
+			Player->BossEnemy = this;
+			CanvasPanel = Player->BossCanvasPanel;
+
+			bShowHealthBar = true;
+		}
+
+		Weapon->SetBladeOnOff(true);
 	}
 }
 
@@ -165,19 +177,6 @@ void ACS_Enemy::MoveToTarget(class ACS_Player* Target)
 		FNavPathSharedPtr NavPath;					// 경로 정보 받아올거, out
 		
 		AIController->MoveTo(MoveRequest, &NavPath);
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("MoveToTarget"));
-		//UE_LOG(LogTemp, Warning, TEXT("MoveToTarget()"));
-		
-		/*
-		TArray<FNavPathPoint> PathPoints =  NavPath->GetPathPoints();
-		for (auto Point : PathPoints)
-		{
-			FVector Location = Point.Location;
-
-			UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.f, 8, FLinearColor::Red, 10.f, 1.5f);
-		}
-		*/
-
 	}
 }
 
@@ -190,8 +189,6 @@ void ACS_Enemy::CombatMovement()
 		if (bIsMoveToTarget)
 		{
 			bIsMoveToTarget = false;
-
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PauseMove"));
 		}
 
 		RotateToTarget(-1.f);
@@ -215,8 +212,6 @@ void ACS_Enemy::CombatMovement()
 		if (!bIsMoveToTarget)
 		{
 			MoveToTarget(CombatTarget);
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("ResumeMove"));
 		}
 
 		FVector Speed = GetCharacterMovement()->Velocity;
@@ -227,7 +222,6 @@ void ACS_Enemy::CombatMovement()
 		{
 			RotateToTarget(-1.f);
 		}
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Velocity2: %f"), LSpeed.Size()));
 	}
 	
 }
@@ -259,13 +253,16 @@ void ACS_Enemy::IncrementGroggyPoint(float Amount)
 
 float ACS_Enemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (bOnHit || bOnGroggy || EnemyMovementStatus == EEnemyMovementStatus::EMS_Dead) return DamageAmount-1;
+	if (bOnHit || bOnGroggy || 
+		EnemyMovementStatus == EEnemyMovementStatus::EMS_Dead) return DamageAmount-1;
 	DisplayWidgetWhenTakeDamage(DamageCauser);	
 
 	DecrementHealth(DamageAmount);				// 데미지 적용
 	bIsMoveToTarget = false;
 	bIsStopMovement = false;
 	ChangeMatTimerActive();			// 머터리얼 교체 타이머 작동
+
+	if(EnemyMovementStatus == EEnemyMovementStatus::EMS_CastSpell) return DamageAmount;
 
 	// 그로기 포인트 증가
 	IncrementGroggyPoint(1);
@@ -521,34 +518,31 @@ void ACS_Enemy::Die()
 {
 	SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Dead);
 
+	Weapon->SetBladeOnOff(false);
+	Weapon->SetVisibility(true);
+	// 래그돌 적용
+	Ragdoll();
+
 	// 일반 적인 타격으로 인한 죽음
 	if (!bIsExecuted)
 	{
-		EnemyAnim->StopAllMontages(0.1f);
-		bOnDeathEnd = true;
-
-		GetMesh()->SetCollisionProfileName("Ragdoll");
-		GetMesh()->SetSimulatePhysics(true);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
-		//UPrimitiveComponent::AddImpulse(CombatTarget->GetActorForwardVector() * 500.f, )
+		// 임펄스
 		FVector ImpurseVec = CombatTarget->GetActorForwardVector() * 700.f * GetMesh()->GetMass();
 		FName BoneName = GetMesh()->GetBoneName(1);
 		GetMesh()->AddImpulse(ImpurseVec, BoneName);
-		//GetMesh()->AddImpulseAtLocation(ImpurseVec, GetActorLocation(), BoneName);
-	}
-	// 처형으로 인한 죽음
-	else
-	{
-		EnemyAnim->StopAllMontages(0.1f);
-		bOnDeathEnd = true;
-
-		GetMesh()->SetCollisionProfileName("Ragdoll");
-		GetMesh()->SetSimulatePhysics(true);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
+
+void ACS_Enemy::Ragdoll()
+{
+	EnemyAnim->StopAllMontages(0.1f);
+	bOnDeathEnd = true;
+
+	GetMesh()->SetCollisionProfileName("Ragdoll");
+	GetMesh()->SetSimulatePhysics(true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 
 bool ACS_Enemy::IsAlive()
 {

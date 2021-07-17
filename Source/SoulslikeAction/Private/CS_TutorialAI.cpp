@@ -1,9 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "CS_Mon1.h"
+
+#include "CS_TutorialAI.h"
 #include "CS_Player.h"
 #include "CS_Weapon.h"
 #include "LJSMathHelpers.h"
+#include "EnumState.h"
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -12,12 +14,12 @@
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
-ACS_Mon1::ACS_Mon1()
+ACS_TutorialAI::ACS_TutorialAI()
 {
 	AIHealthBarComponenet = CreateDefaultSubobject<UWidgetComponent>(TEXT("AIHealthBarComponenet"));
 	AIHealthBarComponenet->SetupAttachment(RootComponent);
 
-	// Àû Á¤º¸ ÃÊ±âÈ­
+	// ì  ì •ë³´ ì´ˆê¸°í™”
 	MaxHealth = 100.f;
 	Health = MaxHealth;
 	MaxStamina = 350.f;
@@ -28,28 +30,28 @@ ACS_Mon1::ACS_Mon1()
 }
 
 // Called when the game starts or when spawned
-void ACS_Mon1::BeginPlay()
+void ACS_TutorialAI::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SightRange = 500.f;
 	SightAngle = 60.f;
 
-	AttackRange = 150.f;
+	AttackRange = 300.f;
 	AttackAngle = 45.f;
 
 	WalkSpeed = 100.f;
 	RunSpeed = 400.f;
 	SprintSpeed = 500.f;
 
-	// °ø°İ ÆĞÅÏ °³¼ö
+	// ê³µê²© íŒ¨í„´ ê°œìˆ˜
 	MaxAttackRandomRange = 2;
 
-	// °ø°İ µô·¹ÀÌ ¹üÀ§ ¼³Á¤
+	// ê³µê²© ë”œë ˆì´ ë²”ìœ„ ì„¤ì •
 	MaxAttackDelay = 8.f;
 	MinAttackDelay = 5.f;
 
-	// ¹«ÀÛÀ§ ÀÌµ¿ µô·¹ÀÌ ¹üÀ§ ¼³Á¤
+	// ë¬´ì‘ìœ„ ì´ë™ ë”œë ˆì´ ë²”ìœ„ ì„¤ì •
 	MaxRandomMoveDelay = 4.f;
 	MinRandomMoveDelay = 2.f;
 
@@ -58,28 +60,44 @@ void ACS_Mon1::BeginPlay()
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
-	// À§Á¬ Å¬·¡½º °¡Á®¿À±â
+	// ìœ„ì ¯ í´ë˜ìŠ¤ ê°€ì ¸ì˜¤ê¸°
 	WidgetClass = Cast<UUserWidget>(AIHealthBarComponenet->GetUserWidgetObject());
 	WidgetClass->SetVisibility(ESlateVisibility::Hidden);
 
-	SetEnemyType(EEnemyType::ET_Normal);
+	SetEnemyType(EEnemyType::ET_TutoAI);
+	SetTutorialAIStatus(ETutorialAIStatus::TAS_AttackGuide);
+
+	// ìº”ë²„ìŠ¤ ë³´ì´ê¸°
+	//VisibleCanvasPanel(true);
 }
 
 // Called every frame
-void ACS_Mon1::Tick(float DeltaTime)
+void ACS_TutorialAI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	if (!IsAlive()) return;
 
 	UpdateMaxWalkSpeed();
+
+	if (CombatTarget && !bIsSetCombatTarget)
+	{
+		bIsSetCombatTarget = true;
+
+		CombatTarget->TutorialEnemy = this;
+		CanvasPanel = CombatTarget->TutorialTextCanvasPanel;
+		//VisibleCanvasPanel(true);
+
+		// íŠœí† ë¦¬ì–¼ í€˜ìŠ¤íŠ¸ ì§€ì •
+		SetTutorialQuest();
+	}
 }
 
-void ACS_Mon1::AttachWeapon()
+void ACS_TutorialAI::AttachWeapon()
 {
 	Weapon = GetWorld()->SpawnActor<ACS_Weapon>(WeaponClass);
 
-	// ¹«±â Attach
+	// ë¬´ê¸° Attach
 	Weapon->SetOwner(this);
 	const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("Socket_twinblade");
 	if (WeaponSocket)
@@ -92,12 +110,12 @@ void ACS_Mon1::AttachWeapon()
 	//UE_LOG(LogTemp, Warning, TEXT("Run AttachWeapon()"));
 }
 
-void ACS_Mon1::CombatBehaviour()
+void ACS_TutorialAI::CombatBehaviour()
 {
 	if (!IsAttackDelayZero()) return;
 
-	// CombatActions ¹è¿­ÀÌ ºñ¾îÀÖ´Â °æ¿ì¿¡¸¸ ½ÇÇàÇÑ´Ù.
-	// CombatActions ¹è¿­¿¡ °ø°İ ÆĞÅÏÀ» AddÇÑ´Ù.
+	// CombatActions ë°°ì—´ì´ ë¹„ì–´ìˆëŠ” ê²½ìš°ì—ë§Œ ì‹¤í–‰í•œë‹¤.
+	// CombatActions ë°°ì—´ì— ê³µê²© íŒ¨í„´ì„ Addí•œë‹¤.
 	if (IsEmptyCombatActions())
 	{
 		int32 randnum = GenerateCombatRandNum();
@@ -119,12 +137,15 @@ void ACS_Mon1::CombatBehaviour()
 	}
 }
 
-void ACS_Mon1::Attack()
+void ACS_TutorialAI::Attack()
 {
+	if (GetTutorialAIStatus() == ETutorialAIStatus::TAS_AttackGuide)
+		return;
+
 	SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Attacking);
 
-	// bOnAttackÀÌ falseÀÏ¶§ ½ÇÇàÇÑ´Ù.
-	// AttackDelay°¡ 0ÀÌÇÏÀÏ¶§ ½ÇÇàÇÑ´Ù.
+	// bOnAttackì´ falseì¼ë•Œ ì‹¤í–‰í•œë‹¤.
+	// AttackDelayê°€ 0ì´í•˜ì¼ë•Œ ì‹¤í–‰í•œë‹¤.
 	if (!bOnAttack)
 	{
 		bOnAttack = true;
@@ -134,28 +155,28 @@ void ACS_Mon1::Attack()
 
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Enemy Attacking"));
 
-		// ÀÌµ¿ ¸ØÃß±â
+		// ì´ë™ ë©ˆì¶”ê¸°
 		AIController->StopMovement();
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		bIsRun = false;
-		
-		// CombatAction ¹è¿­ÀÇ ³¡ºÎºĞºÎÅÍ ¸ùÅ¸ÁÖ ¾Ö´Ï¸ŞÀÌ¼ÇÀ» ²¨³»¿Í¼­ ½ÇÇàÇÑ´Ù.
+
+		// CombatAction ë°°ì—´ì˜ ëë¶€ë¶„ë¶€í„° ëª½íƒ€ì£¼ ì• ë‹ˆë©”ì´ì…˜ì„ êº¼ë‚´ì™€ì„œ ì‹¤í–‰í•œë‹¤.
 		float CountNum = CombatActions.Num();
 		currentMontage = CombatActions[CountNum - 1];
 		CombatActions.RemoveAt(CountNum - 1);
 
-		// °ø°İ ÆĞÅÏÀ» ´Ù ½ÇÇàÇÏ¿´´Ù¸é, °ø°İ µô·¹ÀÌ¸¦ ÁöÁ¤ÇÑ´Ù.
+		// ê³µê²© íŒ¨í„´ì„ ë‹¤ ì‹¤í–‰í•˜ì˜€ë‹¤ë©´, ê³µê²© ë”œë ˆì´ë¥¼ ì§€ì •í•œë‹¤.
 		if (IsEmptyCombatActions())
 			SetAttackDelay();
 
-		// ¸ùÅ¸ÁÖ ½ÇÇà
+		// ëª½íƒ€ì£¼ ì‹¤í–‰
 		EnemyAnim->PlayMontage(currentMontage);
-		// ¸ùÅ¸ÁÖ Section ¹øÈ£¸¦ Ã¹¹øÂ° ¼½¼ÇÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+		// ëª½íƒ€ì£¼ Section ë²ˆí˜¸ë¥¼ ì²«ë²ˆì§¸ ì„¹ì…˜ìœ¼ë¡œ ì§€ì •í•œë‹¤.
 		EnemyAnim->SectionNumber = 1;
 	}
 }
 
-void ACS_Mon1::Die()
+void ACS_TutorialAI::Die()
 {
 	Super::Die();
 
@@ -167,29 +188,29 @@ void ACS_Mon1::Die()
 	}*/
 }
 
-void ACS_Mon1::Executed(AActor* Causer, FVector Location)
+void ACS_TutorialAI::Executed(AActor* Causer, FVector Location)
 {
 	bOnExecution = true;
-	// ¸ğµç ¸ùÅ¸ÁÖ ÁßÁö
+	// ëª¨ë“  ëª½íƒ€ì£¼ ì¤‘ì§€
 	EnemyAnim->StopAllMontages(0.25f);
-	// °ø°İÀÚ¿¡ ¸ÂÃá Æ÷Áö¼ÇÀ¸·Î À§Ä¡ÇÑ´Ù
+	// ê³µê²©ìì— ë§ì¶˜ í¬ì§€ì…˜ìœ¼ë¡œ ìœ„ì¹˜í•œë‹¤
 	SetActorLocation(Location);
 
-	// °ø°İÀÚ¿¡ ¸ÂÃá ·ÎÅ×ÀÌ¼ÇÀ¸·Î À§Ä¡ÇÑ´Ù
+	// ê³µê²©ìì— ë§ì¶˜ ë¡œí…Œì´ì…˜ìœ¼ë¡œ ìœ„ì¹˜í•œë‹¤
 	FRotator RotateToPlayer = Causer->GetActorRotation();
 	SetActorRotation(RotateToPlayer);
 
-	// Ã³Çü ¸ùÅ¸ÁÖ¸¦ ½ÇÇàÇÑ´Ù
+	// ì²˜í˜• ëª½íƒ€ì£¼ë¥¼ ì‹¤í–‰í•œë‹¤
 	EnemyAnim->PlayMontage(EnemyAnim->ExecutedMontage);
 }
 
-void ACS_Mon1::ExecutedTakeDamage(float DamageAmount)
+void ACS_TutorialAI::ExecutedTakeDamage(float DamageAmount)
 {
 	DecrementHealth(DamageAmount);
 	ChangeMatTimerActive();
 }
 
-void ACS_Mon1::ExecutedEnd()
+void ACS_TutorialAI::ExecutedEnd()
 {
 	if (Health <= 0.f)
 	{
@@ -211,7 +232,7 @@ void ACS_Mon1::ExecutedEnd()
 	bOnExecution = false;
 }
 
-bool ACS_Mon1::IsExecuteReady()
+bool ACS_TutorialAI::IsExecuteReady()
 {
 	float TargetAngle = ULJSMathHelpers::GetAngleToTargetCross(this, CombatTarget);
 
@@ -222,4 +243,23 @@ bool ACS_Mon1::IsExecuteReady()
 	}
 	else
 		return false;
+}
+
+float ACS_TutorialAI::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("ACS_TutorialAI::TakeDamage")));
+
+	ChangeMatTimerActive();			// ë¨¸í„°ë¦¬ì–¼ êµì²´ íƒ€ì´ë¨¸ ì‘ë™
+
+	if (GetTutorialAIStatus() == ETutorialAIStatus::TAS_AttackGuide)
+	{
+		return DamageAmount;
+	}
+
+	return DamageAmount;
+}
+
+void ACS_TutorialAI::SetTutorialQuest()
+{
+	TutorialText = TEXT("í…ŒìŠ¤íŠ¸ìœ¼");// TEXT("í…ŒìŠ¤íŠ¸");
 }
