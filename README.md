@@ -402,7 +402,6 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
   
 
 ## 타겟팅 시스템
-#### Class Name : CS_TargetingSystem  
   
   
 ### 1. 주변 적 액터 구하기
