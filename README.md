@@ -443,7 +443,7 @@ FVector UCS_ClimbSystem::MoveToLocation()
 :-------------------------:|:-------------------------:
 IK1 | IK2
   
-### HipOffset
+### Hip displacement
 
 * 캐릭터의 발 밑으로 트레이스를 한다.
   
@@ -453,7 +453,7 @@ IK1 | IK2
   
 ![hipoffset2](https://user-images.githubusercontent.com/48229283/126048443-8883956d-5fc9-4ebc-bd94-0df5be15e627.PNG)
   
-* Distance만큼 메시를 캐릭터의 캡슐보다 밑으로 내려주어야 한다.
+* Distance만큼 루트 본을 캐릭터의 캡슐보다 밑으로 내려주어야 한다.
 
 ```cpp
 void UCS_IKFootSystem::IKProcessing()
@@ -479,8 +479,34 @@ float UCS_IKFootSystem::HipDisplacement(float distanceToGround)
 ```
 
 * HipOffset값을 애니메이션 블루프린트의 본 트랜스폼 변경을 이용하여 Z값을 조절한다.
-* **결과적으로 HipOffset값만큼 메시가 캡슐 아래로 내려가게 된다.**
+* **결과적으로 HipOffset값만큼 루트 본이 캡슐 아래로 내려가게 된다.**
   
 ![hipoffset4](https://user-images.githubusercontent.com/48229283/126048827-4fb85ed0-e4e5-4d1c-b1e0-022f72d1f0fc.PNG) | ![hipoffset3](https://user-images.githubusercontent.com/48229283/126048723-d9df33bb-7c21-49ee-9628-57c9a0512edc.PNG)
 :-------------------------:|:-------------------------:
   
+### Foot displacement
+  
+* 위의 Hip displacement과 마찬가지로 지면과 트레이스 한다.
+* 하나 추가된 것은 Normal벡터를 구해온다.
+  
+```cpp
+void UCS_IKFootSystem::IKProcessing()
+{
+	//...
+	
+	// Foot displacement
+	RFootDistance = IKFootTrace(RFootSocketName, RNormal);
+	LFootDistance = IKFootTrace(LFootSocketName, LNormal);
+	
+	//...
+}
+```
+  
+* 애니메이션 블루프린트에서 레그IK를 사용한다.
+  
+![footdisplacement1](https://user-images.githubusercontent.com/48229283/126049061-c0e0b246-6131-47ee-bad5-8e6c760cbeb7.PNG)
+  
+* 왼쪽, 오른쪽 발 본을 세팅한다.
+  
+![footdisplacement2](https://user-images.githubusercontent.com/48229283/126049104-b1253661-690a-4cf7-9746-269e791dfb8f.PNG) | ![footdisplacement3](https://user-images.githubusercontent.com/48229283/126049105-e354ec38-1f02-4fa4-b0fe-389a38752ecc.PNG)
+:-------------------------:|:-------------------------:
