@@ -429,6 +429,9 @@ FRotator UCS_IKFootSystem::FootRotate(FRotator FootRotation, FVector Normal)
 }
 ```
   
+![footrotation적용](https://user-images.githubusercontent.com/48229283/126260229-fbfb8894-43c7-4444-bcce-91ca1f4fecc4.PNG)
+  
+  
 ## 타겟팅 시스템
   
 ![targeting1](https://user-images.githubusercontent.com/48229283/126050856-b37c2e91-1399-453c-adeb-63dd7e67a084.gif)
