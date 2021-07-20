@@ -408,7 +408,7 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
   
 * 발이 회전해야할 각도 구하기
   
-![footrotation2](https://user-images.githubusercontent.com/48229283/126257428-508f4ea4-ea76-4dc7-98f0-c031306c2f39.PNG)
+![footrotation2](https://user-images.githubusercontent.com/48229283/126257868-79e64451-d0a8-402d-b7e0-e7b116a6b14e.PNG)
   
 * Arctangent
   
