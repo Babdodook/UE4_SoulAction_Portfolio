@@ -5,6 +5,7 @@
 # 목차
 * [소개 영상](https://youtu.be/b2idKuy5u80)
 * [구현 내용](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#구현-내용)
+* [마무리](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#마무리)
   
   
 # 구현 내용
@@ -13,7 +14,7 @@
 * [Foot IK 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#Foot-IK-System)
 * [타겟팅 시스템](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#타겟팅-시스템)
 * [연계 공격](https://github.com/Babdodook/UE4_SoulAction_Portfolio/blob/main/README.md#연계-공격)
-
+  
 ## 몬스터 FSM
   
 ![attack1](https://user-images.githubusercontent.com/48229283/126050728-327a1136-3c65-435b-accb-d81a43aac9a2.gif) | ![attack3](https://user-images.githubusercontent.com/48229283/126050733-68c43cac-b7ed-4b30-bd46-45e8e421bcfa.gif)
@@ -507,4 +508,13 @@ Light Attack | Heavy Attack | Combined
   
 * 캐릭터의 약 공격과 강 공격을 서로 연계하여 사용
 * 각 공격에 대한 Index 변수를 증가 시킴에 따라 공격 애니메이션을 결정
-
+  
+# 마무리
+  
+* 신경썼던 부분
+Climb System, Foot IK 등 하나의 기능을 구현하여 다른 프로젝트에서도 사용할 수 있도록 확장성을 고려하며 개발하였습니다.
+  
+* 아쉬운 부분
+하지만, 캐릭터와 몬스터간의 전투에서 큰 틀을 만들고 좀 더 디테일한 전투 설계를 원하다보니 조잡한 부분이 많이 보입니다.
+  
+긴글 봐주셔서 감사합니다.
