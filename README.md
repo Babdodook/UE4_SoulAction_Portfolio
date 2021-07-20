@@ -410,9 +410,24 @@ float UCS_IKFootSystem::FootDisplacement(float distanceToGround, float footAlpha
   
 ![footrotation2](https://user-images.githubusercontent.com/48229283/126257868-79e64451-d0a8-402d-b7e0-e7b116a6b14e.PNG)
   
-* Arctangent
+* 역탄젠트로 각도 구하기
   
+![탄젠트](https://user-images.githubusercontent.com/48229283/126259295-ca927261-1c2c-4534-8229-0936283e62f9.PNG)
+  
+* 코드로 옮긴 모습
+  
+```cpp
+FRotator UCS_IKFootSystem::FootRotate(FRotator FootRotation, FVector Normal)
+{
+	// Degree로 받기위하여 DegAtan2사용
+	float X = UKismetMathLibrary::DegAtan2(Normal.Y, Normal.Z);
+	float Y = UKismetMathLibrary::DegAtan2(Normal.X, Normal.Z);
 
+	FRotator desiredRotation = UKismetMathLibrary::MakeRotator(X, -Y, 0.f);
+	// 보간하여 반환
+	return UKismetMathLibrary::RInterpTo(FootRotation, desiredRotation, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+}
+```
   
 ## 타겟팅 시스템
   
